@@ -10,10 +10,14 @@ import {
   CheckCircle2, 
   Monitor, 
   Sparkles, 
-  Layers 
+  Layers, 
+  Zap, 
+  ShieldCheck, 
+  HardDrive 
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { api } from '../../services/api';
+import { formatBytes } from '../../utils/formatters';
 
 interface SendFilesProps {
   onNavigate: (tab: string) => void;
@@ -107,58 +111,76 @@ export const SendFiles: React.FC<SendFilesProps> = ({ onNavigate }) => {
   };
 
   return (
-    <div className="space-y-6 max-w-5xl pb-10">
-      <div>
-        <h2 className="text-2xl font-black text-[#20263A] tracking-tight flex items-center gap-2">
-          <span className="p-2 rounded-xl bg-gradient-to-tr from-[#3157D5] to-[#6B7FEA] text-white shadow-md shadow-[#3157D5]/20">
-            <Send className="w-5 h-5" />
-          </span>
-          Send Files & Directories
-        </h2>
-        <p className="text-xs text-[#758096] mt-1">Select items to transmit through the direct Ethernet cable at native link speed</p>
+    <div className="space-y-6 max-w-6xl pb-12">
+      {/* Unique Emerald-Cyan Shiny Header Hero */}
+      <div className="relative overflow-hidden rounded-3xl p-8 text-white shadow-xl shadow-[#0D9488]/20 bg-gradient-to-br from-[#0F766E] via-[#0D9488] to-[#14B8A6] border border-white/20">
+        <div className="absolute -right-16 -top-16 w-64 h-64 bg-white/15 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute right-32 -bottom-20 w-80 h-80 bg-[#3157D5]/25 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2.5 max-w-xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-xs font-bold border border-white/25 shadow-sm">
+              <Zap className="w-3.5 h-3.5 text-yellow-300" />
+              <span>Direct Socket Transmitter (TCP :52521)</span>
+            </div>
+            <h2 className="text-3xl font-black tracking-tight drop-shadow-sm">
+              Send Files & Directories
+            </h2>
+            <p className="text-white/90 text-sm font-medium leading-relaxed">
+              Transmit multi-gigabyte files or entire folder trees with preserved folder hierarchy. All transfers stream directly over the Ethernet link with SHA-256 validation.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="px-5 py-3 rounded-2xl bg-white/15 backdrop-blur-md border border-white/25 text-center shadow-lg">
+              <span className="block text-2xl font-black text-white">{selectedPaths.length}</span>
+              <span className="text-[11px] font-bold text-white/80 uppercase">Selected Items</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {errorMsg && (
-        <div className="p-4 rounded-2xl bg-[#E05252]/10 border border-[#E05252]/20 flex items-center gap-3 text-xs font-bold text-[#E05252] shadow-sm animate-shake">
+        <div className="p-4 rounded-2xl bg-[#E05252]/10 border border-[#E05252]/25 flex items-center gap-3 text-xs font-bold text-[#E05252] shadow-md shadow-[#E05252]/5">
           <AlertCircle className="w-5 h-5 shrink-0" />
           <span>{errorMsg}</span>
         </div>
       )}
 
       {successMsg && (
-        <div className="p-4 rounded-2xl bg-[#22A06B]/10 border border-[#22A06B]/20 flex items-center gap-3 text-xs font-bold text-[#22A06B] shadow-sm animate-bounce">
+        <div className="p-4 rounded-2xl bg-[#22A06B]/10 border border-[#22A06B]/25 flex items-center gap-3 text-xs font-bold text-[#22A06B] shadow-md shadow-[#22A06B]/5">
           <CheckCircle2 className="w-5 h-5 shrink-0" />
           <span>{successMsg}</span>
         </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column: File Selection (2 cols) */}
+        {/* Left Column: File Selection */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="bg-white rounded-3xl border border-[#E6EAF2] p-6 shadow-sm">
+          <div className="bg-white rounded-3xl border border-[#E6EAF2] p-6 shadow-md hover:shadow-lg transition-all">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <Layers className="w-4 h-4 text-[#3157D5]" />
-                <h3 className="font-bold text-sm text-[#20263A]">Selected Items ({selectedPaths.length})</h3>
+                <Layers className="w-5 h-5 text-[#0D9488]" />
+                <h3 className="font-bold text-sm text-[#20263A]">Staged Payload List</h3>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 <button
                   onClick={handlePickFiles}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#3157D5]/10 text-[#3157D5] hover:bg-[#3157D5]/20 text-xs font-bold transition-all cursor-pointer shadow-xs"
+                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-[#0D9488]/10 text-[#0D9488] hover:bg-[#0D9488]/20 text-xs font-bold transition-all cursor-pointer shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
                 >
                   <FilePlus className="w-4 h-4" /> Add Files
                 </button>
                 <button
                   onClick={handlePickFolder}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#22A06B]/10 text-[#22A06B] hover:bg-[#22A06B]/20 text-xs font-bold transition-all cursor-pointer shadow-xs"
+                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-[#3157D5]/10 text-[#3157D5] hover:bg-[#3157D5]/20 text-xs font-bold transition-all cursor-pointer shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
                 >
                   <FolderPlus className="w-4 h-4" /> Add Folder
                 </button>
                 {selectedPaths.length > 0 && (
                   <button
                     onClick={handleClearAll}
-                    className="p-2 rounded-xl text-slate-400 hover:text-[#E05252] hover:bg-[#E05252]/10 transition-all cursor-pointer"
+                    className="p-2.5 rounded-2xl text-slate-400 hover:text-[#E05252] hover:bg-[#E05252]/10 transition-all cursor-pointer"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -166,15 +188,14 @@ export const SendFiles: React.FC<SendFilesProps> = ({ onNavigate }) => {
               </div>
             </div>
 
-            {/* Selected items container */}
             {selectedPaths.length === 0 ? (
-              <div className="py-16 border-2 border-dashed border-[#E6EAF2] rounded-2xl text-center bg-gradient-to-b from-[#F5F7FC]/80 to-white">
-                <div className="w-14 h-14 rounded-2xl bg-blue-50 text-[#3157D5] flex items-center justify-center mx-auto mb-3 shadow-xs">
+              <div className="py-16 border-2 border-dashed border-[#E6EAF2] rounded-2xl text-center bg-gradient-to-b from-[#F5F7FC] to-white shadow-inner">
+                <div className="w-14 h-14 rounded-2xl bg-teal-50 text-[#0D9488] flex items-center justify-center mx-auto mb-3 shadow-sm">
                   <FolderPlus className="w-7 h-7" />
                 </div>
-                <p className="text-sm font-bold text-[#20263A]">Drag & drop or select files to send</p>
+                <p className="text-sm font-bold text-[#20263A]">No items staged for transmission</p>
                 <p className="text-xs text-[#758096] max-w-sm mx-auto mt-1">
-                  Supports individual files, multiple files, and recursive folder structures with preserved paths.
+                  Click 'Add Files' or 'Add Folder' to select items from your drive.
                 </p>
               </div>
             ) : (
@@ -183,9 +204,9 @@ export const SendFiles: React.FC<SendFilesProps> = ({ onNavigate }) => {
                   const isDir = !p.includes('.') || p.endsWith('\\') || p.endsWith('/');
                   const name = p.split(/[\\/]/).pop() || p;
                   return (
-                    <div key={idx} className="py-3 flex items-center justify-between hover:bg-[#F5F7FC] px-3 rounded-2xl transition-all">
+                    <div key={idx} className="py-3 flex items-center justify-between hover:bg-[#F5F7FC] px-3.5 rounded-2xl transition-all shadow-2xs">
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${isDir ? 'bg-amber-100/70 text-[#E6A23C]' : 'bg-blue-100/70 text-[#3157D5]'}`}>
+                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-sm ${isDir ? 'bg-amber-100 text-[#E6A23C]' : 'bg-teal-100 text-[#0D9488]'}`}>
                           {isDir ? <Folder className="w-4 h-4" /> : <File className="w-4 h-4" />}
                         </div>
                         <div className="min-w-0">
@@ -195,7 +216,7 @@ export const SendFiles: React.FC<SendFilesProps> = ({ onNavigate }) => {
                       </div>
                       <button
                         onClick={() => handleRemoveItem(idx)}
-                        className="text-slate-400 hover:text-[#E05252] p-1.5 rounded-lg hover:bg-[#E05252]/10 transition-all cursor-pointer"
+                        className="text-slate-400 hover:text-[#E05252] p-2 rounded-xl hover:bg-[#E05252]/10 transition-all cursor-pointer"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -207,16 +228,16 @@ export const SendFiles: React.FC<SendFilesProps> = ({ onNavigate }) => {
           </div>
         </div>
 
-        {/* Right Column: Peer Selection & Transfer Trigger */}
+        {/* Right Column: Peer Selection & Trigger */}
         <div className="space-y-4">
-          <div className="bg-white rounded-3xl border border-[#E6EAF2] p-6 shadow-sm">
+          <div className="bg-white rounded-3xl border border-[#E6EAF2] p-6 shadow-md hover:shadow-lg transition-all">
             <h3 className="font-bold text-sm text-[#20263A] mb-3 flex items-center gap-2">
-              <Monitor className="w-4 h-4 text-[#3157D5]" />
-              Select Destination Peer
+              <Monitor className="w-4 h-4 text-[#0D9488]" />
+              Select Target Computer
             </h3>
 
             {devices.length === 0 ? (
-              <div className="text-center py-8 text-xs text-[#758096] bg-[#F5F7FC] rounded-2xl p-4">
+              <div className="text-center py-8 text-xs text-[#758096] bg-[#F5F7FC] rounded-2xl p-4 shadow-inner">
                 No LAN computers detected.<br />
                 Connect the Ethernet cable to another PC and launch LANShare.
               </div>
@@ -225,9 +246,9 @@ export const SendFiles: React.FC<SendFilesProps> = ({ onNavigate }) => {
                 {devices.map((dev) => (
                   <label
                     key={dev.device_id}
-                    className={`flex items-center gap-3 p-3.5 rounded-2xl border cursor-pointer transition-all ${
+                    className={`flex items-center gap-3.5 p-3.5 rounded-2xl border cursor-pointer transition-all shadow-sm ${
                       selectedDeviceId === dev.device_id
-                        ? 'border-[#3157D5] bg-[#3157D5]/5 shadow-sm'
+                        ? 'border-[#0D9488] bg-[#0D9488]/5 ring-2 ring-[#0D9488]/20 shadow-md'
                         : 'border-[#E6EAF2] hover:bg-[#F5F7FC]'
                     }`}
                   >
@@ -237,7 +258,7 @@ export const SendFiles: React.FC<SendFilesProps> = ({ onNavigate }) => {
                       value={dev.device_id}
                       checked={selectedDeviceId === dev.device_id}
                       onChange={() => setSelectedDeviceId(dev.device_id)}
-                      className="accent-[#3157D5] w-4 h-4"
+                      className="accent-[#0D9488] w-4 h-4"
                     />
                     <div className="min-w-0">
                       <p className="text-xs font-bold text-[#20263A] truncate">{dev.device_name}</p>
@@ -254,11 +275,11 @@ export const SendFiles: React.FC<SendFilesProps> = ({ onNavigate }) => {
               className={`w-full mt-6 flex items-center justify-center gap-2.5 py-4 rounded-2xl text-white font-bold text-xs transition-all cursor-pointer shadow-lg ${
                 isSending || selectedPaths.length === 0 || !selectedDeviceId
                   ? 'bg-slate-300 cursor-not-allowed shadow-none'
-                  : 'bg-gradient-to-r from-[#3157D5] to-[#486EE6] hover:from-[#2545B8] hover:to-[#3157D5] shadow-[#3157D5]/25 hover:shadow-xl hover:shadow-[#3157D5]/35 transform hover:-translate-y-0.5 active:translate-y-0'
+                  : 'bg-gradient-to-r from-[#0F766E] to-[#0D9488] hover:from-[#0D9488] hover:to-[#14B8A6] shadow-[#0D9488]/25 hover:shadow-xl hover:shadow-[#0D9488]/35 transform hover:-translate-y-0.5 active:translate-y-0'
               }`}
             >
               <Send className="w-4 h-4" />
-              {isSending ? 'Connecting...' : 'Stream To Peer Now'}
+              {isSending ? 'Initiating Handshake...' : 'Transmit Payload Now'}
             </button>
           </div>
         </div>

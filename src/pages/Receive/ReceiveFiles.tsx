@@ -6,7 +6,11 @@ import {
   X, 
   ShieldAlert, 
   FileText, 
-  HardDrive 
+  HardDrive, 
+  Radio, 
+  ShieldCheck, 
+  Sparkles, 
+  Layers 
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { api } from '../../services/api';
@@ -59,86 +63,112 @@ export const ReceiveFiles: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-bold text-[#20263A]">Receive Files</h2>
-        <p className="text-xs text-[#758096]">Authorize and monitor incoming LAN transfers sent from other computers</p>
+    <div className="space-y-6 max-w-5xl pb-12">
+      {/* Unique Violet-Purple Shiny Header Hero */}
+      <div className="relative overflow-hidden rounded-3xl p-8 text-white shadow-xl shadow-[#7C3AED]/20 bg-gradient-to-br from-[#6D28D9] via-[#7C3AED] to-[#8B5CF6] border border-white/20">
+        <div className="absolute -right-16 -top-16 w-64 h-64 bg-white/15 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute right-32 -bottom-20 w-80 h-80 bg-[#EC4899]/20 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2.5 max-w-xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-xs font-bold border border-white/25 shadow-sm">
+              <Radio className="w-3.5 h-3.5 text-pink-300 animate-pulse" />
+              <span>Inbound Transfer Listener (TCP :52521)</span>
+            </div>
+            <h2 className="text-3xl font-black tracking-tight drop-shadow-sm">
+              Receive Mode & Authorization
+            </h2>
+            <p className="text-white/90 text-sm font-medium leading-relaxed">
+              Accept or decline incoming data streams from connected LAN peers. Select custom save destinations per transfer with guaranteed SHA-256 verification.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="px-5 py-3 rounded-2xl bg-white/15 backdrop-blur-md border border-white/25 text-center shadow-lg">
+              <span className="block text-2xl font-black text-white">{incomingRequest ? 1 : 0}</span>
+              <span className="text-[11px] font-bold text-white/80 uppercase">Pending Prompts</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {incomingRequest ? (
-        <div className="bg-white rounded-2xl border-2 border-[#3157D5] p-6 shadow-md shadow-[#3157D5]/10 animate-fade-in">
-          <div className="flex items-center gap-3 text-[#3157D5] mb-4">
-            <Download className="w-6 h-6 animate-bounce" />
+        <div className="bg-white rounded-3xl border-2 border-[#7C3AED] p-8 shadow-xl shadow-[#7C3AED]/15 animate-fade-in space-y-6">
+          <div className="flex items-center gap-4 text-[#7C3AED]">
+            <div className="w-12 h-12 rounded-2xl bg-[#7C3AED]/10 flex items-center justify-center shrink-0 shadow-sm">
+              <Download className="w-6 h-6 animate-bounce" />
+            </div>
             <div>
-              <h3 className="font-bold text-base text-[#20263A]">Incoming Transfer Request</h3>
-              <p className="text-xs text-[#758096]">Sender: <span className="font-semibold text-[#20263A]">{incomingRequest.sender_name}</span> ({incomingRequest.peer_ip})</p>
+              <h3 className="font-extrabold text-lg text-[#20263A]">Incoming Transfer Request</h3>
+              <p className="text-xs text-[#758096]">Sender: <span className="font-bold text-[#7C3AED]">{incomingRequest.sender_name}</span> ({incomingRequest.peer_ip})</p>
             </div>
           </div>
 
-          <div className="bg-[#F5F7FC] rounded-xl p-4 my-4 space-y-2">
+          <div className="bg-gradient-to-r from-[#F5F7FC] to-purple-50/40 rounded-2xl p-5 border border-[#E6EAF2] space-y-3 shadow-inner">
             <div className="flex justify-between text-xs text-[#758096]">
               <span>Total Items:</span>
-              <span className="font-semibold text-[#20263A]">{incomingRequest.total_items} items</span>
+              <span className="font-bold text-[#20263A]">{incomingRequest.total_items} items</span>
             </div>
             <div className="flex justify-between text-xs text-[#758096]">
-              <span>Total Size:</span>
-              <span className="font-semibold text-[#20263A]">{formatBytes(incomingRequest.total_bytes)}</span>
+              <span>Total Payload Size:</span>
+              <span className="font-bold text-[#20263A]">{formatBytes(incomingRequest.total_bytes)}</span>
             </div>
-            <div className="max-h-40 overflow-y-auto mt-2 border-t border-[#E6EAF2] pt-2">
+
+            <div className="max-h-48 overflow-y-auto mt-3 border-t border-[#E6EAF2] pt-3 divide-y divide-[#E6EAF2]">
               {incomingRequest.items.map((item, idx) => (
-                <div key={idx} className="flex justify-between text-[11px] py-1 text-slate-600">
-                  <span className="truncate pr-4">{item.relative_path}</span>
-                  <span>{item.is_directory ? 'Folder' : formatBytes(item.size)}</span>
+                <div key={idx} className="flex justify-between text-xs py-2 text-slate-700">
+                  <span className="truncate pr-4 font-mono">{item.relative_path}</span>
+                  <span className="shrink-0 font-bold text-[#7C3AED]">{item.is_directory ? 'Directory' : formatBytes(item.size)}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Destination Folder */}
-          <div className="mb-6">
-            <label className="block text-xs font-semibold text-[#20263A] mb-1.5">Save Destination</label>
-            <div className="flex gap-2">
+          {/* Destination Folder Selection */}
+          <div>
+            <label className="block text-xs font-bold text-[#20263A] mb-2">Save Destination Folder</label>
+            <div className="flex gap-3">
               <input
                 type="text"
                 readOnly
                 value={savePath || incomingRequest.default_save_path}
-                className="flex-1 px-3 py-2 text-xs bg-[#F5F7FC] border border-[#E6EAF2] rounded-xl text-[#20263A]"
+                className="flex-1 px-4 py-3 text-xs font-medium bg-[#F5F7FC] border border-[#E6EAF2] rounded-2xl text-[#20263A]"
               />
               <button
                 onClick={handleSelectFolder}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-[#20263A] cursor-pointer"
+                className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-[#20263A] cursor-pointer shadow-sm hover:shadow-md transition-all"
               >
-                <FolderOpen className="w-4 h-4" /> Change Folder
+                <FolderOpen className="w-4 h-4 text-[#7C3AED]" /> Choose Folder
               </button>
             </div>
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3">
+          <div className="flex gap-4 pt-2">
             <button
               disabled={isDeciding}
               onClick={handleAccept}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#22A06B] hover:bg-[#1b8558] text-white font-semibold text-xs transition-all cursor-pointer shadow-sm"
+              className="flex-1 flex items-center justify-center gap-2.5 py-4 rounded-2xl bg-gradient-to-r from-[#22A06B] to-[#1b8558] text-white font-bold text-xs shadow-lg shadow-[#22A06B]/25 hover:shadow-xl hover:shadow-[#22A06B]/35 transition-all cursor-pointer transform hover:-translate-y-0.5"
             >
-              <Check className="w-4 h-4" /> Accept & Receive
+              <Check className="w-5 h-5" /> Accept & Stream Files
             </button>
             <button
               disabled={isDeciding}
               onClick={handleReject}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#E05252] hover:bg-[#c93f3f] text-white font-semibold text-xs transition-all cursor-pointer shadow-sm"
+              className="flex-1 flex items-center justify-center gap-2.5 py-4 rounded-2xl bg-gradient-to-r from-[#E05252] to-[#c93f3f] text-white font-bold text-xs shadow-lg shadow-[#E05252]/25 hover:shadow-xl hover:shadow-[#E05252]/35 transition-all cursor-pointer transform hover:-translate-y-0.5"
             >
-              <X className="w-4 h-4" /> Reject Request
+              <X className="w-5 h-5" /> Reject Request
             </button>
           </div>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-[#E6EAF2] p-12 text-center shadow-xs">
-          <div className="w-14 h-14 rounded-2xl bg-[#3157D5]/10 text-[#3157D5] flex items-center justify-center mx-auto mb-3">
-            <Download className="w-6 h-6" />
+        <div className="bg-white rounded-3xl border border-[#E6EAF2] p-16 text-center shadow-md hover:shadow-lg transition-all">
+          <div className="w-16 h-16 rounded-3xl bg-purple-100/70 text-[#7C3AED] flex items-center justify-center mx-auto mb-4 shadow-sm">
+            <Download className="w-8 h-8" />
           </div>
-          <h3 className="font-bold text-base text-[#20263A]">Ready to Receive</h3>
-          <p className="text-xs text-[#758096] max-w-sm mx-auto mt-1">
-            LANShare TCP listener is active on port 52521. When a connected peer sends you files, an authorization prompt will appear here.
+          <h3 className="font-extrabold text-lg text-[#20263A]">Socket Listener Active</h3>
+          <p className="text-xs text-[#758096] max-w-md mx-auto mt-2 leading-relaxed">
+            LANShare TCP listener is active on port 52521. When a connected peer initiates a file transmission, an authorization prompt will appear here for your approval.
           </p>
         </div>
       )}
