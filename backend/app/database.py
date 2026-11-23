@@ -3,12 +3,12 @@ import os
 import json
 import uuid
 import socket
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Dict, Any, Optional
 from app.config import DB_PATH, AppSettings, DEFAULT_DOWNLOAD_DIR
 
 def get_connection() -> sqlite3.Connection:
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=30.0)
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -32,7 +32,7 @@ def init_db():
         last_known_ip TEXT NOT NULL,
         mac_address TEXT,
         transfer_port INTEGER NOT NULL,
-        paired_status TEXT DEFAULT 'unpaired', -- 'unpaired', 'pending', 'paired', 'trusted'
+        paired_status TEXT DEFAULT 'unpaired',
         pairing_code TEXT,
         first_seen TEXT NOT NULL,
         last_seen TEXT NOT NULL
@@ -42,7 +42,8 @@ def init_db():
     # Transfers table (Overall sessions)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS transfers (
-        transfer_id TEXT PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        transfer_id TEXT NOT NULL,
         direction TEXT NOT NULL,            -- 'send' or 'receive'
         peer_device_id TEXT NOT NULL,
         peer_device_name TEXT NOT NULL,
@@ -55,7 +56,8 @@ def init_db():
         started_at TEXT NOT NULL,
         completed_at TEXT,
         average_speed REAL DEFAULT 0.0,
-        save_path TEXT
+        save_path TEXT,
+        UNIQUE(transfer_id, direction)
     );
     """)
 
@@ -64,13 +66,13 @@ def init_db():
     CREATE TABLE IF NOT EXISTS transfer_items (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         transfer_id TEXT NOT NULL,
+        direction TEXT DEFAULT 'send',
         relative_path TEXT NOT NULL,
         is_directory INTEGER DEFAULT 0,
         size INTEGER DEFAULT 0,
         transferred_bytes INTEGER DEFAULT 0,
         checksum TEXT,
-        status TEXT DEFAULT 'pending',       -- 'pending', 'transferring', 'verified', 'failed'
-        FOREIGN KEY (transfer_id) REFERENCES transfers(transfer_id) ON DELETE CASCADE
+        status TEXT DEFAULT 'pending'
     );
     """)
 
@@ -187,10 +189,10 @@ def create_transfer_record(
     conn.commit()
     conn.close()
 
-def update_transfer_status(transfer_id: str, status: str, transferred_bytes: Optional[int] = None, speed: Optional[float] = None, error: Optional[str] = None):
+def update_transfer_status(transfer_id: str, status: str, direction: Optional[str] = None, transferred_bytes: Optional[int] = None, speed: Optional[float] = None, error: Optional[str] = None):
     conn = get_connection()
     cursor = conn.cursor()
-    now = datetime.utcnow().isoformat()
+    now = datetime.now(timezone.utc).isoformat()
     completed = now if status in ('completed', 'failed', 'cancelled', 'rejected') else None
     
     updates = ["status = ?"]
@@ -209,7 +211,12 @@ def update_transfer_status(transfer_id: str, status: str, transferred_bytes: Opt
         params.append(completed)
     params.append(transfer_id)
     
-    cursor.execute(f"UPDATE transfers SET {', '.join(updates)} WHERE transfer_id = ?", params)
+    where_clause = "WHERE transfer_id = ?"
+    if direction:
+        where_clause += " AND direction = ?"
+        params.append(direction)
+        
+    cursor.execute(f"UPDATE transfers SET {', '.join(updates)} {where_clause}", params)
     conn.commit()
     conn.close()
 

@@ -1,0 +1,24 @@
+appId: com.lanshare.desktop
+productName: LANShare
+directories:
+  output: release
+  buildResources: assets
+files:
+  - dist/**
+  - dist-electron/**
+  - package.json
+extraResources:
+  - from: backend-dist
+    to: backend
+    filter:
+      - "**/*"
+win:
+  target:
+    - nsis
+  icon: assets/icon.ico
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: LANShare
