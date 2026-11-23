@@ -5,14 +5,16 @@ import {
   Monitor, 
   Activity, 
   Network, 
-  CheckCircle2, 
+  ShieldCheck, 
+  Zap, 
   ArrowUpRight, 
   ArrowDownLeft, 
-  Zap, 
-  ShieldCheck 
+  Sparkles, 
+  Radio, 
+  ChevronRight, 
+  Cpu 
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { formatBytes } from '../../utils/formatters';
 
 interface DashboardProps {
   onNavigate: (tab: string) => void;
@@ -22,141 +24,176 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const { networkStatus, devices, activeTransfers } = useApp();
 
   return (
-    <div className="space-y-6">
-      {/* Top Banner / Hero */}
-      <div className="bg-gradient-to-r from-[#3157D5] via-[#486EE6] to-[#6B7FEA] rounded-2xl p-6 text-white shadow-md shadow-[#3157D5]/15 relative overflow-hidden">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/20 text-xs font-medium backdrop-blur-xs mb-2">
-              <Zap className="w-3.5 h-3.5" /> High-Speed Offline Transfer
+    <div className="space-y-6 pb-8">
+      {/* Hero Shiny Gradient Banner */}
+      <div className="relative overflow-hidden rounded-3xl p-8 text-white shadow-xl shadow-[#3157D5]/20 bg-gradient-to-br from-[#1E3BB3] via-[#3157D5] to-[#7B8EF8] border border-white/20">
+        {/* Glow overlay circles */}
+        <div className="absolute -right-16 -top-16 w-64 h-64 bg-white/15 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute right-32 -bottom-20 w-80 h-80 bg-[#22A06B]/20 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="space-y-3 max-w-xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-xs font-bold border border-white/20 shadow-xs tracking-wide">
+              <Sparkles className="w-3.5 h-3.5 text-yellow-300 animate-spin-slow" />
+              <span>Offline Direct Gigabit Link</span>
             </div>
-            <h2 className="text-2xl font-bold tracking-tight">LANShare Peer-to-Peer</h2>
-            <p className="text-white/80 text-sm mt-1 max-w-xl">
-              Transfer unlimited files and folders across your local Ethernet cable with zero cloud dependencies, complete privacy, and SHA-256 data integrity.
+            <h2 className="text-3xl font-black tracking-tight text-white drop-shadow-sm">
+              LANShare Peer-to-Peer
+            </h2>
+            <p className="text-white/85 text-sm font-medium leading-relaxed">
+              Ultra-fast offline file and folder streaming directly across your Ethernet network cable.
+              Zero cloud latency, end-to-end SHA-256 integrity, and complete hardware bandwidth utilization.
             </p>
           </div>
-          <div className="flex items-center gap-3">
+
+          <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={() => onNavigate('send')}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-[#3157D5] font-semibold text-sm shadow-sm hover:bg-slate-50 transition-all cursor-pointer"
+              className="flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-white text-[#1E3BB3] font-bold text-sm shadow-lg shadow-black/10 hover:shadow-xl hover:bg-slate-50 transition-all cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
             >
-              <Send className="w-4 h-4" /> Send Files
+              <Send className="w-4 h-4 text-[#3157D5]" />
+              <span>Send Files</span>
             </button>
             <button
               onClick={() => onNavigate('receive')}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/20 hover:bg-white/30 text-white font-semibold text-sm backdrop-blur-xs transition-all cursor-pointer"
+              className="flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-white/15 hover:bg-white/25 text-white font-bold text-sm backdrop-blur-md border border-white/30 transition-all cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
             >
-              <Download className="w-4 h-4" /> Receive Mode
+              <Download className="w-4 h-4" />
+              <span>Receive Files</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Network & Device Status Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* Colorful Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Network Status */}
-        <div className="bg-white rounded-xl p-5 border border-[#E6EAF2] shadow-xs">
-          <div className="flex items-center justify-between text-[#758096] mb-3">
-            <span className="text-xs font-semibold uppercase tracking-wider">Network Connection</span>
-            <Network className="w-4 h-4 text-[#3157D5]" />
+        <div className="relative overflow-hidden bg-white rounded-3xl p-5 border border-[#E6EAF2] shadow-sm hover:shadow-md transition-all group">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110" />
+          <div className="relative z-10">
+            <div className="flex items-center justify-between text-[#758096] mb-3">
+              <span className="text-[11px] font-bold uppercase tracking-wider">Network Link</span>
+              <div className="w-8 h-8 rounded-xl bg-blue-100/70 flex items-center justify-center text-[#3157D5]">
+                <Network className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className={`text-2xl font-black ${networkStatus?.is_connected ? 'text-[#20263A]' : 'text-[#E05252]'}`}>
+                {networkStatus?.is_connected ? 'Connected' : 'Offline'}
+              </span>
+              {networkStatus?.is_ethernet && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#22A06B]/15 text-[#22A06B] font-bold">Ethernet</span>
+              )}
+            </div>
+            <p className="text-xs font-semibold text-[#758096] mt-2 truncate">
+              IP: <span className="font-mono text-[#20263A]">{networkStatus?.local_ip || '127.0.0.1'}</span>
+            </p>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className={`text-xl font-bold ${networkStatus?.is_connected ? 'text-[#20263A]' : 'text-[#E05252]'}`}>
-              {networkStatus?.is_connected ? 'Connected' : 'Offline'}
-            </span>
-            {networkStatus?.is_ethernet && (
-              <span className="text-xs px-2 py-0.5 rounded-md bg-[#22A06B]/10 text-[#22A06B] font-medium">Ethernet</span>
-            )}
-          </div>
-          <p className="text-xs text-[#758096] mt-1 truncate">
-            IP: {networkStatus?.local_ip || 'None'}
-          </p>
         </div>
 
         {/* Card 2: Discovered Peers */}
-        <div className="bg-white rounded-xl p-5 border border-[#E6EAF2] shadow-xs">
-          <div className="flex items-center justify-between text-[#758096] mb-3">
-            <span className="text-xs font-semibold uppercase tracking-wider">Discovered Devices</span>
-            <Monitor className="w-4 h-4 text-[#3157D5]" />
+        <div className="relative overflow-hidden bg-white rounded-3xl p-5 border border-[#E6EAF2] shadow-sm hover:shadow-md transition-all group">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-purple-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110" />
+          <div className="relative z-10">
+            <div className="flex items-center justify-between text-[#758096] mb-3">
+              <span className="text-[11px] font-bold uppercase tracking-wider">LAN Peers</span>
+              <div className="w-8 h-8 rounded-xl bg-purple-100/70 flex items-center justify-center text-[#6B7FEA]">
+                <Monitor className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-black text-[#20263A]">
+              {devices.filter(d => d.is_online).length}
+            </div>
+            <p className="text-xs font-semibold text-[#758096] mt-2">
+              {devices.length} known in cache
+            </p>
           </div>
-          <div className="text-xl font-bold text-[#20263A]">
-            {devices.filter(d => d.is_online).length}
-          </div>
-          <p className="text-xs text-[#758096] mt-1">
-            {devices.length} known in network cache
-          </p>
         </div>
 
         {/* Card 3: Active Transfers */}
-        <div className="bg-white rounded-xl p-5 border border-[#E6EAF2] shadow-xs">
-          <div className="flex items-center justify-between text-[#758096] mb-3">
-            <span className="text-xs font-semibold uppercase tracking-wider">Active Transfers</span>
-            <Activity className="w-4 h-4 text-[#3157D5]" />
+        <div className="relative overflow-hidden bg-white rounded-3xl p-5 border border-[#E6EAF2] shadow-sm hover:shadow-md transition-all group">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110" />
+          <div className="relative z-10">
+            <div className="flex items-center justify-between text-[#758096] mb-3">
+              <span className="text-[11px] font-bold uppercase tracking-wider">Live Streams</span>
+              <div className="w-8 h-8 rounded-xl bg-emerald-100/70 flex items-center justify-center text-[#22A06B]">
+                <Activity className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-black text-[#20263A]">
+              {activeTransfers.length}
+            </div>
+            <p className="text-xs font-semibold text-[#758096] mt-2">
+              {activeTransfers.length > 0 ? 'Transferring at wire speed' : 'Sockets listening'}
+            </p>
           </div>
-          <div className="text-xl font-bold text-[#20263A]">
-            {activeTransfers.length}
-          </div>
-          <p className="text-xs text-[#758096] mt-1">
-            Running in real-time
-          </p>
         </div>
 
-        {/* Card 4: Security Shield */}
-        <div className="bg-white rounded-xl p-5 border border-[#E6EAF2] shadow-xs">
-          <div className="flex items-center justify-between text-[#758096] mb-3">
-            <span className="text-xs font-semibold uppercase tracking-wider">Data Protection</span>
-            <ShieldCheck className="w-4 h-4 text-[#22A06B]" />
+        {/* Card 4: Integrity Engine */}
+        <div className="relative overflow-hidden bg-white rounded-3xl p-5 border border-[#E6EAF2] shadow-sm hover:shadow-md transition-all group">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-amber-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110" />
+          <div className="relative z-10">
+            <div className="flex items-center justify-between text-[#758096] mb-3">
+              <span className="text-[11px] font-bold uppercase tracking-wider">Data Shield</span>
+              <div className="w-8 h-8 rounded-xl bg-amber-100/70 flex items-center justify-center text-[#E6A23C]">
+                <ShieldCheck className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-black text-[#20263A]">
+              SHA-256
+            </div>
+            <p className="text-xs font-semibold text-[#758096] mt-2">
+              Hardware verification active
+            </p>
           </div>
-          <div className="text-xl font-bold text-[#20263A]">
-            SHA-256
-          </div>
-          <p className="text-xs text-[#758096] mt-1">
-            Cryptographic Integrity Active
-          </p>
         </div>
       </div>
 
-      {/* Discovered Devices Quick Table */}
-      <div className="bg-white rounded-2xl border border-[#E6EAF2] p-5 shadow-xs">
+      {/* Discovered LAN Peers Table */}
+      <div className="bg-white rounded-3xl border border-[#E6EAF2] p-6 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="font-bold text-[#20263A] text-base">Discovered LAN Devices</h3>
-            <p className="text-xs text-[#758096]">Computers ready on the same Ethernet LAN cable</p>
+            <h3 className="font-bold text-[#20263A] text-base flex items-center gap-2">
+              <Radio className="w-4 h-4 text-[#3157D5] animate-pulse" />
+              Connected LAN Computers
+            </h3>
+            <p className="text-xs text-[#758096]">Computers communicating over UDP broadcast beacons</p>
           </div>
           <button
             onClick={() => onNavigate('devices')}
-            className="text-xs font-semibold text-[#3157D5] hover:underline cursor-pointer"
+            className="flex items-center gap-1 text-xs font-bold text-[#3157D5] hover:text-[#2545B8] cursor-pointer"
           >
-            Manage Devices &rarr;
+            <span>View All Devices</span>
+            <ChevronRight className="w-4 h-4" />
           </button>
         </div>
 
         {devices.length === 0 ? (
-          <div className="py-8 text-center bg-[#F5F7FC] rounded-xl border border-dashed border-[#E6EAF2]">
-            <Monitor className="w-8 h-8 text-[#758096] mx-auto mb-2 opacity-50" />
-            <p className="text-sm font-semibold text-[#20263A]">No other LANShare peers discovered</p>
+          <div className="py-10 text-center bg-gradient-to-b from-[#F5F7FC] to-white rounded-2xl border-2 border-dashed border-[#E6EAF2]">
+            <Monitor className="w-10 h-10 text-[#758096]/40 mx-auto mb-2" />
+            <p className="text-sm font-bold text-[#20263A]">No other LANShare peers discovered yet</p>
             <p className="text-xs text-[#758096] max-w-sm mx-auto mt-1">
-              Ensure both computers are connected to the same Ethernet cable or switch and have LANShare running.
+              Connect both PCs with an Ethernet cable and start LANShare on both machines. They will detect each other automatically.
             </p>
           </div>
         ) : (
           <div className="divide-y divide-[#E6EAF2]">
             {devices.map((dev) => (
-              <div key={dev.device_id} className="py-3 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={`w-3 h-3 rounded-full ${dev.is_online ? 'bg-[#22A06B]' : 'bg-slate-300'}`} />
+              <div key={dev.device_id} className="py-3.5 flex items-center justify-between hover:bg-[#F5F7FC]/70 px-3 rounded-2xl transition-all">
+                <div className="flex items-center gap-3.5">
+                  <div className={`w-3.5 h-3.5 rounded-full ${dev.is_online ? 'bg-[#22A06B] shadow-sm shadow-[#22A06B]/50 animate-pulse' : 'bg-slate-300'}`} />
                   <div>
-                    <p className="text-sm font-semibold text-[#20263A]">{dev.device_name}</p>
-                    <p className="text-xs text-[#758096]">{dev.last_known_ip}:{dev.transfer_port}</p>
+                    <p className="text-sm font-bold text-[#20263A]">{dev.device_name}</p>
+                    <p className="text-xs font-mono text-[#758096]">{dev.last_known_ip}:{dev.transfer_port}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs px-2 py-0.5 rounded bg-slate-100 text-[#758096] font-medium capitalize">
+                <div className="flex items-center gap-3">
+                  <span className="text-[11px] px-2.5 py-1 rounded-full bg-slate-100 text-[#758096] font-bold capitalize">
                     {dev.paired_status}
                   </span>
                   <button
                     onClick={() => onNavigate('send')}
-                    className="px-3 py-1.5 rounded-lg bg-[#3157D5] text-white text-xs font-semibold hover:bg-[#2545B8] transition-all cursor-pointer"
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#3157D5] to-[#486EE6] text-white text-xs font-bold shadow-md shadow-[#3157D5]/20 hover:shadow-lg transition-all cursor-pointer"
                   >
                     Send File
                   </button>

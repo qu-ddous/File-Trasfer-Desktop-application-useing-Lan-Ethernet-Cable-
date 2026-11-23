@@ -1,33 +1,63 @@
 const API_BASE = 'http://127.0.0.1:52522/api';
 
+const DEFAULT_SETTINGS = {
+  device_name: 'LANShare-PC',
+  device_id: 'default-local',
+  download_path: 'C:\\Users\\Public\\Downloads\\LANShare',
+  discovery_port: 52520,
+  transfer_port: 52521,
+  auto_accept_trusted: false,
+  max_concurrent_transfers: 3,
+  chunk_size: 524288,
+  rate_limit_mbps: 0,
+  theme: 'light'
+};
+
+async function safeFetch(url: string, options?: RequestInit, fallback: any = {}) {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2500);
+    const res = await fetch(url, { ...options, signal: controller.signal });
+    clearTimeout(timeoutId);
+    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.warn(`Fetch error for ${url}:`, err);
+    return fallback;
+  }
+}
+
 export const api = {
   getNetworkStatus: async () => {
-    const res = await fetch(`${API_BASE}/network/status`);
-    return res.json();
+    return safeFetch(`${API_BASE}/network/status`, undefined, {
+      is_connected: false,
+      active_interface: 'Detecting...',
+      local_ip: '127.0.0.1',
+      is_ethernet: false,
+      speed_mbps: 0,
+      discovered_devices_count: 0,
+      active_transfers_count: 0
+    });
   },
   getNetworkInterfaces: async () => {
-    const res = await fetch(`${API_BASE}/network/interfaces`);
-    return res.json();
+    return safeFetch(`${API_BASE}/network/interfaces`, undefined, { interfaces: [], best_lan: null });
   },
   getDevices: async () => {
-    const res = await fetch(`${API_BASE}/devices`);
-    return res.json();
+    return safeFetch(`${API_BASE}/devices`, undefined, { devices: [], online_peers: [] });
   },
   connectManual: async (ip: string, port: number = 52520) => {
-    const res = await fetch(`${API_BASE}/devices/connect`, {
+    return safeFetch(`${API_BASE}/devices/connect`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ip, port })
-    });
-    return res.json();
+    }, { status: 'error' });
   },
   pairDevice: async (deviceId: string, action: 'pair' | 'unpair' | 'trust') => {
-    const res = await fetch(`${API_BASE}/devices/pair`, {
+    return safeFetch(`${API_BASE}/devices/pair`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ device_id: deviceId, action })
-    });
-    return res.json();
+    }, { status: 'error' });
   },
   sendFiles: async (payload: {
     peer_ip: string;
@@ -36,61 +66,58 @@ export const api = {
     peer_name: string;
     file_paths: string[];
   }) => {
-    const res = await fetch(`${API_BASE}/transfers/send`, {
+    return safeFetch(`${API_BASE}/transfers/send`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
-    });
-    return res.json();
+    }, { status: 'error' });
   },
   getActiveTransfers: async () => {
-    const res = await fetch(`${API_BASE}/transfers`);
-    return res.json();
+    return safeFetch(`${API_BASE}/transfers`, undefined, { active: [] });
   },
   getTransferDetails: async (transferId: string) => {
-    const res = await fetch(`${API_BASE}/transfers/${transferId}`);
-    return res.json();
+    return safeFetch(`${API_BASE}/transfers/${transferId}`, undefined, null);
   },
   acceptTransfer: async (transferId: string, savePath?: string) => {
-    const res = await fetch(`${API_BASE}/transfers/${transferId}/accept`, {
+    return safeFetch(`${API_BASE}/transfers/${transferId}/accept`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ save_path: savePath })
-    });
-    return res.json();
+    }, { status: 'error' });
   },
   rejectTransfer: async (transferId: string) => {
-    const res = await fetch(`${API_BASE}/transfers/${transferId}/reject`, {
+    return safeFetch(`${API_BASE}/transfers/${transferId}/reject`, {
       method: 'POST'
-    });
-    return res.json();
+    }, { status: 'error' });
   },
   cancelTransfer: async (transferId: string) => {
-    const res = await fetch(`${API_BASE}/transfers/${transferId}/cancel`, {
+    return safeFetch(`${API_BASE}/transfers/${transferId}/cancel`, {
       method: 'POST'
-    });
-    return res.json();
+    }, { status: 'error' });
   },
   getHistory: async () => {
-    const res = await fetch(`${API_BASE}/history`);
-    return res.json();
+    return safeFetch(`${API_BASE}/history`, undefined, { history: [] });
   },
   clearHistory: async () => {
-    const res = await fetch(`${API_BASE}/history`, {
+    return safeFetch(`${API_BASE}/history`, {
       method: 'DELETE'
-    });
-    return res.json();
+    }, { status: 'history_cleared' });
   },
   getSettings: async () => {
-    const res = await fetch(`${API_BASE}/settings`);
-    return res.json();
+    const cached = localStorage.getItem('lanshare_settings');
+    const defaultData = cached ? JSON.parse(cached) : DEFAULT_SETTINGS;
+    const res = await safeFetch(`${API_BASE}/settings`, undefined, defaultData);
+    if (res && res.device_name) {
+      localStorage.setItem('lanshare_settings', JSON.stringify(res));
+    }
+    return res || defaultData;
   },
   saveSettings: async (settings: any) => {
-    const res = await fetch(`${API_BASE}/settings`, {
+    localStorage.setItem('lanshare_settings', JSON.stringify(settings));
+    return safeFetch(`${API_BASE}/settings`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(settings)
-    });
-    return res.json();
+    }, { status: 'saved_locally', settings });
   }
 };

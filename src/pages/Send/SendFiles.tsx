@@ -8,11 +8,12 @@ import {
   File, 
   AlertCircle, 
   CheckCircle2, 
-  Monitor 
+  Monitor, 
+  Sparkles, 
+  Layers 
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { api } from '../../services/api';
-import { formatBytes } from '../../utils/formatters';
 
 interface SendFilesProps {
   onNavigate: (tab: string) => void;
@@ -33,8 +34,7 @@ export const SendFiles: React.FC<SendFilesProps> = ({ onNavigate }) => {
         setSelectedPaths((prev) => Array.from(new Set([...prev, ...files])));
       }
     } else {
-      // In web browser preview mode fallback prompt
-      const path = prompt("Enter full file path to send (Electron dialog active in desktop app):");
+      const path = prompt("Enter file path to send:");
       if (path) setSelectedPaths((prev) => Array.from(new Set([...prev, path])));
     }
   };
@@ -46,7 +46,7 @@ export const SendFiles: React.FC<SendFilesProps> = ({ onNavigate }) => {
         setSelectedPaths((prev) => Array.from(new Set([...prev, folder])));
       }
     } else {
-      const path = prompt("Enter full folder path to send:");
+      const path = prompt("Enter folder path to send:");
       if (path) setSelectedPaths((prev) => Array.from(new Set([...prev, path])));
     }
   };
@@ -71,7 +71,7 @@ export const SendFiles: React.FC<SendFilesProps> = ({ onNavigate }) => {
     }
 
     if (!selectedDeviceId) {
-      setErrorMsg("Please choose a receiver device.");
+      setErrorMsg("Please choose a target receiver computer.");
       return;
     }
 
@@ -92,7 +92,7 @@ export const SendFiles: React.FC<SendFilesProps> = ({ onNavigate }) => {
       });
 
       if (res.status === 'started') {
-        setSuccessMsg(`Transfer request sent to ${peer.device_name}! Awaiting receiver approval.`);
+        setSuccessMsg(`Transfer initiated with ${peer.device_name}! Awaiting receiver approval.`);
         setSelectedPaths([]);
         await refreshTransfers();
         setTimeout(() => onNavigate('transfers'), 1200);
@@ -107,85 +107,97 @@ export const SendFiles: React.FC<SendFilesProps> = ({ onNavigate }) => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="space-y-6 max-w-5xl pb-10">
       <div>
-        <h2 className="text-xl font-bold text-[#20263A]">Send Files & Folders</h2>
-        <p className="text-xs text-[#758096]">Select items to stream directly through the Ethernet cable to a LAN peer</p>
+        <h2 className="text-2xl font-black text-[#20263A] tracking-tight flex items-center gap-2">
+          <span className="p-2 rounded-xl bg-gradient-to-tr from-[#3157D5] to-[#6B7FEA] text-white shadow-md shadow-[#3157D5]/20">
+            <Send className="w-5 h-5" />
+          </span>
+          Send Files & Directories
+        </h2>
+        <p className="text-xs text-[#758096] mt-1">Select items to transmit through the direct Ethernet cable at native link speed</p>
       </div>
 
       {errorMsg && (
-        <div className="p-3.5 rounded-xl bg-[#E05252]/10 border border-[#E05252]/20 flex items-center gap-3 text-sm text-[#E05252]">
-          <AlertCircle className="w-4 h-4 shrink-0" />
+        <div className="p-4 rounded-2xl bg-[#E05252]/10 border border-[#E05252]/20 flex items-center gap-3 text-xs font-bold text-[#E05252] shadow-sm animate-shake">
+          <AlertCircle className="w-5 h-5 shrink-0" />
           <span>{errorMsg}</span>
         </div>
       )}
 
       {successMsg && (
-        <div className="p-3.5 rounded-xl bg-[#22A06B]/10 border border-[#22A06B]/20 flex items-center gap-3 text-sm text-[#22A06B]">
-          <CheckCircle2 className="w-4 h-4 shrink-0" />
+        <div className="p-4 rounded-2xl bg-[#22A06B]/10 border border-[#22A06B]/20 flex items-center gap-3 text-xs font-bold text-[#22A06B] shadow-sm animate-bounce">
+          <CheckCircle2 className="w-5 h-5 shrink-0" />
           <span>{successMsg}</span>
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Left Column: File Selection */}
-        <div className="md:col-span-2 space-y-4">
-          <div className="bg-white rounded-2xl border border-[#E6EAF2] p-5 shadow-xs">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column: File Selection (2 cols) */}
+        <div className="lg:col-span-2 space-y-4">
+          <div className="bg-white rounded-3xl border border-[#E6EAF2] p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-sm text-[#20263A]">Selected Items ({selectedPaths.length})</h3>
+              <div className="flex items-center gap-2">
+                <Layers className="w-4 h-4 text-[#3157D5]" />
+                <h3 className="font-bold text-sm text-[#20263A]">Selected Items ({selectedPaths.length})</h3>
+              </div>
+
               <div className="flex items-center gap-2">
                 <button
                   onClick={handlePickFiles}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#3157D5]/10 text-[#3157D5] hover:bg-[#3157D5]/20 text-xs font-semibold transition-all cursor-pointer"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#3157D5]/10 text-[#3157D5] hover:bg-[#3157D5]/20 text-xs font-bold transition-all cursor-pointer shadow-xs"
                 >
                   <FilePlus className="w-4 h-4" /> Add Files
                 </button>
                 <button
                   onClick={handlePickFolder}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#3157D5]/10 text-[#3157D5] hover:bg-[#3157D5]/20 text-xs font-semibold transition-all cursor-pointer"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#22A06B]/10 text-[#22A06B] hover:bg-[#22A06B]/20 text-xs font-bold transition-all cursor-pointer shadow-xs"
                 >
                   <FolderPlus className="w-4 h-4" /> Add Folder
                 </button>
                 {selectedPaths.length > 0 && (
                   <button
                     onClick={handleClearAll}
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-slate-500 hover:text-[#E05252] text-xs font-medium cursor-pointer"
+                    className="p-2 rounded-xl text-slate-400 hover:text-[#E05252] hover:bg-[#E05252]/10 transition-all cursor-pointer"
                   >
-                    <Trash2 className="w-3.5 h-3.5" /> Clear
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 )}
               </div>
             </div>
 
-            {/* List */}
+            {/* Selected items container */}
             {selectedPaths.length === 0 ? (
-              <div className="py-12 border-2 border-dashed border-[#E6EAF2] rounded-xl text-center bg-[#F5F7FC]/60">
-                <FolderPlus className="w-10 h-10 text-slate-400 mx-auto mb-2 opacity-60" />
-                <p className="text-sm font-semibold text-[#20263A]">No files or folders selected</p>
-                <p className="text-xs text-[#758096] mt-1">
-                  Click 'Add Files' or 'Add Folder' to select items from your drive
+              <div className="py-16 border-2 border-dashed border-[#E6EAF2] rounded-2xl text-center bg-gradient-to-b from-[#F5F7FC]/80 to-white">
+                <div className="w-14 h-14 rounded-2xl bg-blue-50 text-[#3157D5] flex items-center justify-center mx-auto mb-3 shadow-xs">
+                  <FolderPlus className="w-7 h-7" />
+                </div>
+                <p className="text-sm font-bold text-[#20263A]">Drag & drop or select files to send</p>
+                <p className="text-xs text-[#758096] max-w-sm mx-auto mt-1">
+                  Supports individual files, multiple files, and recursive folder structures with preserved paths.
                 </p>
               </div>
             ) : (
-              <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
+              <div className="max-h-96 overflow-y-auto divide-y divide-[#E6EAF2]">
                 {selectedPaths.map((p, idx) => {
                   const isDir = !p.includes('.') || p.endsWith('\\') || p.endsWith('/');
                   const name = p.split(/[\\/]/).pop() || p;
                   return (
-                    <div key={idx} className="py-2.5 flex items-center justify-between hover:bg-[#F5F7FC] px-2 rounded-lg">
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        {isDir ? <Folder className="w-4 h-4 text-[#3157D5] shrink-0" /> : <File className="w-4 h-4 text-slate-500 shrink-0" />}
+                    <div key={idx} className="py-3 flex items-center justify-between hover:bg-[#F5F7FC] px-3 rounded-2xl transition-all">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${isDir ? 'bg-amber-100/70 text-[#E6A23C]' : 'bg-blue-100/70 text-[#3157D5]'}`}>
+                          {isDir ? <Folder className="w-4 h-4" /> : <File className="w-4 h-4" />}
+                        </div>
                         <div className="min-w-0">
-                          <p className="text-xs font-semibold text-[#20263A] truncate">{name}</p>
-                          <p className="text-[11px] text-[#758096] truncate">{p}</p>
+                          <p className="text-xs font-bold text-[#20263A] truncate">{name}</p>
+                          <p className="text-[11px] font-mono text-[#758096] truncate">{p}</p>
                         </div>
                       </div>
                       <button
                         onClick={() => handleRemoveItem(idx)}
-                        className="text-slate-400 hover:text-[#E05252] p-1 cursor-pointer"
+                        className="text-slate-400 hover:text-[#E05252] p-1.5 rounded-lg hover:bg-[#E05252]/10 transition-all cursor-pointer"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   );
@@ -195,22 +207,27 @@ export const SendFiles: React.FC<SendFilesProps> = ({ onNavigate }) => {
           </div>
         </div>
 
-        {/* Right Column: Destination Peer Selection & Action */}
+        {/* Right Column: Peer Selection & Transfer Trigger */}
         <div className="space-y-4">
-          <div className="bg-white rounded-2xl border border-[#E6EAF2] p-5 shadow-xs">
-            <h3 className="font-semibold text-sm text-[#20263A] mb-3">Target Receiver</h3>
+          <div className="bg-white rounded-3xl border border-[#E6EAF2] p-6 shadow-sm">
+            <h3 className="font-bold text-sm text-[#20263A] mb-3 flex items-center gap-2">
+              <Monitor className="w-4 h-4 text-[#3157D5]" />
+              Select Destination Peer
+            </h3>
+
             {devices.length === 0 ? (
-              <div className="text-center py-6 text-xs text-[#758096]">
-                No LAN devices detected.<br />Connect another computer to the Ethernet cable.
+              <div className="text-center py-8 text-xs text-[#758096] bg-[#F5F7FC] rounded-2xl p-4">
+                No LAN computers detected.<br />
+                Connect the Ethernet cable to another PC and launch LANShare.
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 {devices.map((dev) => (
                   <label
                     key={dev.device_id}
-                    className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                    className={`flex items-center gap-3 p-3.5 rounded-2xl border cursor-pointer transition-all ${
                       selectedDeviceId === dev.device_id
-                        ? 'border-[#3157D5] bg-[#3157D5]/5 shadow-xs'
+                        ? 'border-[#3157D5] bg-[#3157D5]/5 shadow-sm'
                         : 'border-[#E6EAF2] hover:bg-[#F5F7FC]'
                     }`}
                   >
@@ -220,11 +237,11 @@ export const SendFiles: React.FC<SendFilesProps> = ({ onNavigate }) => {
                       value={dev.device_id}
                       checked={selectedDeviceId === dev.device_id}
                       onChange={() => setSelectedDeviceId(dev.device_id)}
-                      className="accent-[#3157D5]"
+                      className="accent-[#3157D5] w-4 h-4"
                     />
                     <div className="min-w-0">
                       <p className="text-xs font-bold text-[#20263A] truncate">{dev.device_name}</p>
-                      <p className="text-[11px] text-[#758096] truncate">{dev.last_known_ip}</p>
+                      <p className="text-[11px] font-mono text-[#758096] truncate">{dev.last_known_ip}</p>
                     </div>
                   </label>
                 ))}
@@ -234,14 +251,14 @@ export const SendFiles: React.FC<SendFilesProps> = ({ onNavigate }) => {
             <button
               disabled={isSending || selectedPaths.length === 0 || !selectedDeviceId}
               onClick={handleStartSend}
-              className={`w-full mt-5 flex items-center justify-center gap-2 py-3 rounded-xl text-white font-semibold text-sm shadow-sm transition-all cursor-pointer ${
+              className={`w-full mt-6 flex items-center justify-center gap-2.5 py-4 rounded-2xl text-white font-bold text-xs transition-all cursor-pointer shadow-lg ${
                 isSending || selectedPaths.length === 0 || !selectedDeviceId
                   ? 'bg-slate-300 cursor-not-allowed shadow-none'
-                  : 'bg-[#3157D5] hover:bg-[#2545B8] shadow-[#3157D5]/20'
+                  : 'bg-gradient-to-r from-[#3157D5] to-[#486EE6] hover:from-[#2545B8] hover:to-[#3157D5] shadow-[#3157D5]/25 hover:shadow-xl hover:shadow-[#3157D5]/35 transform hover:-translate-y-0.5 active:translate-y-0'
               }`}
             >
               <Send className="w-4 h-4" />
-              {isSending ? 'Initiating Transfer...' : 'Send Files Now'}
+              {isSending ? 'Connecting...' : 'Stream To Peer Now'}
             </button>
           </div>
         </div>
