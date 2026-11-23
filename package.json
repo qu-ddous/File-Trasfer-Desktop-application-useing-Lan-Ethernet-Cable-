@@ -2,7 +2,7 @@
   "name": "lanshare",
   "version": "1.0.0",
   "description": "Professional LAN-Based File Transfer Desktop Application",
-  "main": "dist-electron/main.js",
+  "main": "dist-electron/main/main.js",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
