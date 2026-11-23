@@ -24,10 +24,15 @@ function createWindow() {
   });
 
   const isDev = !app.isPackaged;
-  if (isDev) {
-    mainWindow.loadURL('http://localhost:5173');
+  const indexPath = path.join(__dirname, '..', '..', 'dist', 'index.html');
+  console.log('[Main] Loading UI from:', indexPath);
+
+  if (isDev && process.env.VITE_DEV_SERVER_URL) {
+    mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
   } else {
-    mainWindow.loadFile(path.join(__dirname, '..', '..', 'dist', 'index.html'));
+    mainWindow.loadFile(indexPath).catch((err) => {
+      console.error('[Main] Failed to loadFile:', err);
+    });
   }
 
   mainWindow.on('closed', () => {

@@ -1,5 +1,6 @@
 import { spawn, ChildProcess } from 'child_process';
 import path from 'path';
+import fs from 'fs';
 import { app } from 'electron';
 
 export class BackendManager {
@@ -17,18 +18,24 @@ export class BackendManager {
       let scriptOrBin: string;
       let args: string[] = [];
 
-      if (isPackaged) {
-        // Packaged standalone executable bundled by PyInstaller
-        scriptOrBin = path.join(process.resourcesPath, 'backend', 'run.exe');
+      // Check paths for packaged vs dev
+      const packagedBinary = path.join(process.resourcesPath, 'backend', 'run.exe');
+      const devBinary = path.join(app.getAppPath(), '..', 'backend-dist', 'run.exe');
+      const scriptPath = path.join(__dirname, '..', '..', 'backend', 'run.py');
+
+      if (fs.existsSync(packagedBinary)) {
+        scriptOrBin = packagedBinary;
+        pythonExecutable = scriptOrBin;
+      } else if (fs.existsSync(devBinary)) {
+        scriptOrBin = devBinary;
         pythonExecutable = scriptOrBin;
       } else {
-        // In local development, use system python
         pythonExecutable = process.platform === 'win32' ? 'python' : 'python3';
-        scriptOrBin = path.join(__dirname, '..', '..', 'backend', 'run.py');
+        scriptOrBin = scriptPath;
         args = [scriptOrBin];
       }
 
-      console.log(`[BackendManager] Starting Python backend from ${scriptOrBin}...`);
+      console.log(`[BackendManager] Starting backend from: ${scriptOrBin}`);
 
       const env = {
         ...process.env,
@@ -37,7 +44,7 @@ export class BackendManager {
       };
 
       try {
-        if (isPackaged) {
+        if (scriptOrBin.endsWith('.exe')) {
           this.process = spawn(scriptOrBin, [], { env, detached: false });
         } else {
           this.process = spawn(pythonExecutable, args, { env, detached: false });
