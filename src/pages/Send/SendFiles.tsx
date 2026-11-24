@@ -111,7 +111,7 @@ export const SendFiles: React.FC<SendFilesProps> = ({ onNavigate }) => {
   };
 
   return (
-    <div className="space-y-6 max-w-6xl pb-12">
+    <div className="space-y-6 w-full pb-12">
       {/* Light Hero Banner */}
       <div className="relative overflow-hidden rounded-3xl p-8 bg-white border border-slate-200 shadow-sm text-slate-800">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -269,10 +269,10 @@ export const SendFiles: React.FC<SendFilesProps> = ({ onNavigate }) => {
             <button
               disabled={isSending || selectedPaths.length === 0 || !selectedDeviceId}
               onClick={handleStartSend}
-              className={`w-full mt-6 flex items-center justify-center gap-2.5 py-4 rounded-2xl text-white font-bold text-xs transition-all cursor-pointer shadow-lg ${
+              className={`w-full mt-6 flex items-center justify-center gap-2.5 py-4 rounded-2xl text-white font-bold text-xs transition-all cursor-pointer shadow-md ${
                 isSending || selectedPaths.length === 0 || !selectedDeviceId
-                  ? 'bg-slate-300 cursor-not-allowed shadow-none'
-                  : 'bg-gradient-to-r from-[#0F766E] to-[#0D9488] hover:from-[#0D9488] hover:to-[#14B8A6] shadow-[#0D9488]/25 hover:shadow-xl hover:shadow-[#0D9488]/35 transform hover:-translate-y-0.5 active:translate-y-0'
+                  ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
+                  : 'bg-teal-600 hover:bg-teal-700 shadow-teal-500/20 hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0'
               }`}
             >
               <Send className="w-4 h-4" />

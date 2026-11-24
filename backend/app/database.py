@@ -149,6 +149,13 @@ def get_devices(online_device_ids: List[str] = None) -> List[Dict[str, Any]]:
         devices.append(d)
     return devices
 
+def delete_device(device_id: str):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM devices WHERE device_id = ?", (device_id,))
+    conn.commit()
+    conn.close()
+
 def update_device_pairing(device_id: str, status: str, code: Optional[str] = None):
     conn = get_connection()
     cursor = conn.cursor()

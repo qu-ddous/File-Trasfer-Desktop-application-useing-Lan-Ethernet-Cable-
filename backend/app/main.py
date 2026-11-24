@@ -183,6 +183,13 @@ async def connect_manual_device(req: ConnectManualRequest):
     res = await discovery_engine.add_manual_peer(req.ip, req.port or DEFAULT_DISCOVERY_PORT)
     return {"status": "success", "result": res}
 
+@app.delete("/api/devices/{device_id}")
+async def remove_device(device_id: str):
+    if discovery_engine and device_id in discovery_engine.known_peers:
+        del discovery_engine.known_peers[device_id]
+    delete_device(device_id)
+    return {"status": "success", "device_id": device_id}
+
 @app.post("/api/devices/pair")
 async def pair_device(req: PairRequest):
     if req.action == "trust":

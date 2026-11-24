@@ -16,7 +16,7 @@ const DEFAULT_SETTINGS = {
 async function safeFetch(url: string, options?: RequestInit, fallback: any = {}) {
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2500);
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
     const res = await fetch(url, { ...options, signal: controller.signal });
     clearTimeout(timeoutId);
     if (!res.ok) throw new Error(`HTTP error ${res.status}`);
@@ -50,6 +50,11 @@ export const api = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ip, port })
+    }, { status: 'error' });
+  },
+  deleteDevice: async (deviceId: string) => {
+    return safeFetch(`${API_BASE}/devices/${encodeURIComponent(deviceId)}`, {
+      method: 'DELETE'
     }, { status: 'error' });
   },
   pairDevice: async (deviceId: string, action: 'pair' | 'unpair' | 'trust') => {

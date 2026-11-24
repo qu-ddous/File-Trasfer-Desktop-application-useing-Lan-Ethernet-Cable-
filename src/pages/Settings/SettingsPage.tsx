@@ -59,7 +59,7 @@ export const SettingsPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl pb-10">
+    <div className="space-y-6 w-full pb-10">
       {/* Header */}
       <div className="bg-white rounded-3xl p-7 border border-slate-200 shadow-sm flex items-center justify-between">
         <div>

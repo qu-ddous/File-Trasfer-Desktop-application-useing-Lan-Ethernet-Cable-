@@ -63,7 +63,7 @@ export const ReceiveFiles: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-5xl pb-12">
+    <div className="space-y-6 w-full pb-12">
       {/* Light Hero Banner */}
       <div className="relative overflow-hidden rounded-3xl p-8 bg-white border border-slate-200 shadow-sm text-slate-800">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">

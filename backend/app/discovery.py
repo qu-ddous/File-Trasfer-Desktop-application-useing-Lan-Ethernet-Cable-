@@ -112,10 +112,29 @@ class DiscoveryEngine:
             if is_new and self.on_device_discovered:
                 asyncio.create_task(self.on_device_discovered(peer_data))
 
+            # Reply with PONG directly to sender when PING or BEACON received
+            msg_type = msg.get("type")
+            if msg_type in ("PING", "BEACON") and self._transport:
+                pong = json.dumps({
+                    "magic": "LANSHARE",
+                    "version": "1.0",
+                    "type": "PONG",
+                    "device_id": self.device_id,
+                    "device_name": self.device_name,
+                    "transfer_port": self.transfer_port,
+                    "os": "Windows",
+                    "timestamp": time.time()
+                }).encode("utf-8")
+                try:
+                    self._transport.sendto(pong, (ip, self.discovery_port))
+                except Exception:
+                    pass
+
         except Exception as e:
             logger.debug(f"Error handling discovery datagram from {addr}: {e}")
 
     async def _beacon_loop(self):
+        from app.database import get_devices
         while self.running:
             try:
                 msg = json.dumps({
@@ -134,6 +153,16 @@ class DiscoveryEngine:
                 for iface in get_network_interfaces():
                     if iface["is_up"] and iface["broadcast"]:
                         destinations.append(iface["broadcast"])
+
+                # Unicast directly to all saved device IPs from the database
+                try:
+                    saved_devices = get_devices()
+                    for d in saved_devices:
+                        target_ip = d.get("last_known_ip")
+                        if target_ip and target_ip not in ("127.0.0.1", "0.0.0.0"):
+                            destinations.append(target_ip)
+                except Exception:
+                    pass
 
                 for target in set(destinations):
                     try:
@@ -164,10 +193,25 @@ class DiscoveryEngine:
     def get_online_peers(self) -> List[Dict[str, Any]]:
         return list(self.known_peers.values())
 
-    async def add_manual_peer(self, ip: str, port: int) -> Optional[Dict[str, Any]]:
+    async def add_manual_peer(self, ip: str, port: int) -> Dict[str, Any]:
         """
         Manually connects or pings an IP when broadcast is blocked by network switch.
+        Persists to database immediately so it never disappears, sends UDP ping, and tests TCP reachability.
         """
+        from app.database import get_devices, upsert_device
+        ip = ip.strip()
+
+        # 1. Immediately persist to database so it stays in the list!
+        existing_devices = get_devices()
+        existing = next((d for d in existing_devices if d.get("last_known_ip") == ip), None)
+        
+        peer_id = existing["device_id"] if existing else f"peer-{ip.replace('.', '-')}"
+        peer_name = existing["device_name"] if existing else f"LAN PC ({ip})"
+        transfer_port = existing["transfer_port"] if existing else self.transfer_port
+
+        upsert_device(peer_id, peer_name, ip, transfer_port)
+
+        # 2. Send direct UDP PING
         try:
             msg = json.dumps({
                 "magic": "LANSHARE",
@@ -178,8 +222,36 @@ class DiscoveryEngine:
                 "transfer_port": self.transfer_port,
                 "os": "Windows"
             }).encode("utf-8")
-            self._transport.sendto(msg, (ip, self.discovery_port))
-            return {"status": "ping_sent", "target": ip}
+            if self._transport:
+                self._transport.sendto(msg, (ip, self.discovery_port))
         except Exception as e:
-            logger.error(f"Manual peer ping failed: {e}")
-            return None
+            logger.warning(f"Manual peer UDP ping error: {e}")
+
+        # 3. Active TCP socket check on transfer port (52521)
+        tcp_online = False
+        try:
+            connect_task = asyncio.open_connection(ip, transfer_port)
+            reader, writer = await asyncio.wait_for(connect_task, timeout=1.5)
+            writer.close()
+            try:
+                await writer.wait_closed()
+            except Exception:
+                pass
+            tcp_online = True
+        except Exception:
+            tcp_online = False
+
+        if tcp_online:
+            peer_data = {
+                "device_id": peer_id,
+                "device_name": peer_name,
+                "ip_address": ip,
+                "transfer_port": transfer_port,
+                "os": "Windows",
+                "last_seen": time.time()
+            }
+            self.known_peers[peer_id] = peer_data
+            upsert_device(peer_id, peer_name, ip, transfer_port)
+            return {"status": "success", "online": True, "ip": ip, "device_id": peer_id, "device_name": peer_name}
+
+        return {"status": "saved", "online": False, "ip": ip, "device_id": peer_id, "device_name": peer_name}
