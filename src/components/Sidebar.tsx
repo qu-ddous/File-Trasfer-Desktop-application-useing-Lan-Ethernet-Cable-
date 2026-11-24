@@ -18,10 +18,11 @@ interface SidebarProps {
   setTab: (tab: string) => void;
   isOnline: boolean;
   activeCount: number;
+  appMode?: 'server' | 'client' | 'full';
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setTab, isOnline, activeCount }) => {
-  const navItems = [
+export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setTab, isOnline, activeCount, appMode = 'full' }) => {
+  let navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'send', label: 'Send Files', icon: Send },
     { id: 'receive', label: 'Receive Files', icon: Download },
@@ -31,6 +32,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setTab, isOnline, 
     { id: 'history', label: 'Transfer History', icon: History },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
+
+  if (appMode === 'server') {
+    navItems = [
+      { id: 'receive', label: 'Receive Server', icon: Download },
+      { id: 'devices', label: 'Connected Peers', icon: Monitor },
+      { id: 'share', label: 'Share Client App', icon: Share2, shiny: true },
+      { id: 'transfers', label: 'Active Streams', icon: Activity, badge: activeCount > 0 ? activeCount : null },
+      { id: 'history', label: 'Transfer History', icon: History },
+      { id: 'settings', label: 'Server Settings', icon: Settings },
+    ];
+  } else if (appMode === 'client') {
+    navItems = [
+      { id: 'send', label: 'Send Files (Client)', icon: Send },
+      { id: 'devices', label: 'Select Server PC', icon: Monitor },
+      { id: 'transfers', label: 'Active Streams', icon: Activity, badge: activeCount > 0 ? activeCount : null },
+      { id: 'history', label: 'Transfer History', icon: History },
+      { id: 'settings', label: 'Settings', icon: Settings },
+    ];
+  }
 
   return (
     <aside className="w-64 bg-white border-r border-[#E6EAF2] flex flex-col justify-between select-none shadow-sm z-20">
@@ -42,10 +62,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setTab, isOnline, 
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <h1 className="font-black text-lg text-[#20263A] tracking-tight">LANShare</h1>
-              <span className="px-1.5 py-0.2 rounded-md bg-[#3157D5]/10 text-[#3157D5] font-extrabold text-[9px]">PRO</span>
+              <h1 className="font-black text-lg text-[#0F172A] tracking-tight">LANShare</h1>
+              <span className={`px-1.5 py-0.2 rounded-md font-extrabold text-[9px] ${
+                appMode === 'server' ? 'bg-[#7C3AED]/15 text-[#7C3AED]' : (appMode === 'client' ? 'bg-[#0D9488]/15 text-[#0D9488]' : 'bg-[#3157D5]/10 text-[#3157D5]')
+              }`}>
+                {appMode === 'server' ? 'SERVER' : (appMode === 'client' ? 'CLIENT' : 'PRO')}
+              </span>
             </div>
-            <p className="text-[11px] text-[#758096] font-medium -mt-0.5">Offline Gigabit Transfer</p>
+            <p className="text-[11px] text-[#64748B] font-medium -mt-0.5">
+              {appMode === 'server' ? 'Dedicated Receiver' : (appMode === 'client' ? 'Dedicated Sender' : 'Offline Gigabit Transfer')}
+            </p>
           </div>
         </div>
 

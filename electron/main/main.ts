@@ -6,15 +6,25 @@ let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 const backendManager = new BackendManager(52522);
 
+// Detect mode from process executable name or CLI flag
+const execName = path.basename(process.execPath).toLowerCase();
+const appMode = process.argv.includes('--server') || execName.includes('server') 
+  ? 'server' 
+  : (process.argv.includes('--client') || execName.includes('client') ? 'client' : 'full');
+
 function createWindow() {
+  const windowTitle = appMode === 'server'
+    ? 'LANShare - Server Receiver'
+    : (appMode === 'client' ? 'LANShare - Client Sender' : 'LANShare - Professional Local File Transfer');
+
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 820,
     minWidth: 960,
     minHeight: 640,
     frame: true,
-    title: 'LANShare - Professional Local File Transfer',
-    backgroundColor: '#F5F7FC',
+    title: windowTitle,
+    backgroundColor: '#F8FAFC',
     webPreferences: {
       preload: path.join(__dirname, '..', 'preload', 'preload.js'),
       contextIsolation: true,
@@ -73,6 +83,9 @@ function setupIPC() {
 
   // App version
   ipcMain.handle('app:get-version', () => app.getVersion());
+
+  // App mode ('server' | 'client' | 'full')
+  ipcMain.handle('app:get-mode', () => appMode);
 
   // Show desktop notification
   ipcMain.handle('app:notification', (_, { title, body }) => {

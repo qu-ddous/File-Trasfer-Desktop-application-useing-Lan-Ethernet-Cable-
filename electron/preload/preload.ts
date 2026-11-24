@@ -6,6 +6,7 @@ export interface ElectronAPI {
   openFolder: (folderPath: string) => Promise<boolean>;
   getAppVersion: () => Promise<string>;
   showNotification: (title: string, body: string) => Promise<void>;
+  getAppMode: () => Promise<string>;
 }
 
 const api: ElectronAPI = {
@@ -13,7 +14,8 @@ const api: ElectronAPI = {
   selectFolder: () => ipcRenderer.invoke('dialog:select-folder'),
   openFolder: (folderPath: string) => ipcRenderer.invoke('shell:open-folder', folderPath),
   getAppVersion: () => ipcRenderer.invoke('app:get-version'),
-  showNotification: (title: string, body: string) => ipcRenderer.invoke('app:notification', { title, body })
+  showNotification: (title: string, body: string) => ipcRenderer.invoke('app:notification', { title, body }),
+  getAppMode: () => ipcRenderer.invoke('app:get-mode')
 };
 
 contextBridge.exposeInMainWorld('electronAPI', api);
