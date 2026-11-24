@@ -8,6 +8,7 @@ import { Devices } from './pages/Devices/Devices';
 import { ActiveTransfers } from './pages/Transfers/ActiveTransfers';
 import { TransferHistory } from './pages/History/TransferHistory';
 import { SettingsPage } from './pages/Settings/SettingsPage';
+import { ShareApp } from './pages/Share/ShareApp';
 
 const AppContent: React.FC = () => {
   const [currentTab, setCurrentTab] = useState('dashboard');
@@ -26,6 +27,7 @@ const AppContent: React.FC = () => {
         {currentTab === 'send' && <SendFiles onNavigate={setCurrentTab} />}
         {currentTab === 'receive' && <ReceiveFiles />}
         {currentTab === 'devices' && <Devices />}
+        {currentTab === 'share' && <ShareApp />}
         {currentTab === 'transfers' && <ActiveTransfers />}
         {currentTab === 'history' && <TransferHistory />}
         {currentTab === 'settings' && <SettingsPage />}

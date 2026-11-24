@@ -98,6 +98,15 @@ export const api = {
   getHistory: async () => {
     return safeFetch(`${API_BASE}/history`, undefined, { history: [] });
   },
+  getShareInfo: async () => {
+    return safeFetch(`${API_BASE}/share/info`, undefined, {
+      share_url: 'http://127.0.0.1:52522/download',
+      has_zip: false,
+      has_exe: false,
+      ip: '127.0.0.1',
+      port: 52522
+    });
+  },
   clearHistory: async () => {
     return safeFetch(`${API_BASE}/history`, {
       method: 'DELETE'

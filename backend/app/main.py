@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from fastapi.responses import FileResponse, HTMLResponse
 
 from app.config import (
     APP_NAME,
@@ -276,3 +277,162 @@ async def read_settings():
 async def update_settings(cfg: AppSettings):
     save_settings(cfg)
     return {"status": "saved", "settings": cfg}
+
+# ----------------- Quick Share App Installer Over LAN -----------------
+
+def get_bundle_paths():
+    """Finds the local LANShare.exe and ZIP distribution package."""
+    candidates_zip = [
+        os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "release", "LANShare-Windows-x64.zip")),
+        os.path.abspath(os.path.join(os.getcwd(), "release", "LANShare-Windows-x64.zip")),
+        os.path.abspath(os.path.join(sys.executable, "..", "..", "release", "LANShare-Windows-x64.zip")),
+    ]
+    candidates_exe = [
+        os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "release", "LANShare-win32-x64", "LANShare.exe")),
+        os.path.abspath(os.path.join(os.getcwd(), "release", "LANShare-win32-x64", "LANShare.exe")),
+        os.path.abspath(os.path.join(sys.executable, "..", "..", "release", "LANShare-win32-x64", "LANShare.exe")),
+    ]
+    zip_path = next((p for p in candidates_zip if os.path.exists(p)), None)
+    exe_path = next((p for p in candidates_exe if os.path.exists(p)), None)
+    return zip_path, exe_path
+
+@app.get("/api/share/info")
+async def get_share_app_info():
+    best = get_best_lan_ip()
+    ip = best["ip_address"] if best else "127.0.0.1"
+    zip_path, exe_path = get_bundle_paths()
+    return {
+        "share_url": f"http://{ip}:52522/download",
+        "has_zip": zip_path is not None,
+        "has_exe": exe_path is not None,
+        "ip": ip,
+        "port": 52522
+    }
+
+@app.get("/download", response_class=HTMLResponse)
+async def web_download_landing():
+    best = get_best_lan_ip()
+    ip = best["ip_address"] if best else "127.0.0.1"
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download LANShare - Instant LAN Installer</title>
+    <style>
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #1E3BB3 0%, #3157D5 50%, #6B7FEA 100%);
+            color: #ffffff;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }}
+        .card {{
+            background: rgba(255, 255, 255, 0.95);
+            color: #20263A;
+            border-radius: 28px;
+            padding: 45px 35px;
+            max-width: 520px;
+            width: 100%;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }}
+        .badge {{
+            display: inline-block;
+            background: rgba(49, 87, 213, 0.1);
+            color: #3157D5;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+        }}
+        h1 {{
+            margin: 0 0 10px;
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+        }}
+        p {{
+            color: #758096;
+            font-size: 14px;
+            line-height: 1.5;
+            margin: 0 0 30px;
+        }}
+        .btn {{
+            display: block;
+            width: 100%;
+            background: linear-gradient(135deg, #3157D5 0%, #486EE6 100%);
+            color: #ffffff;
+            padding: 16px 24px;
+            border-radius: 18px;
+            font-weight: 700;
+            font-size: 15px;
+            text-decoration: none;
+            box-shadow: 0 10px 25px rgba(49, 87, 213, 0.35);
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+            margin-bottom: 14px;
+        }}
+        .btn:hover {{
+            transform: translateY(-2px);
+            box-shadow: 0 14px 30px rgba(49, 87, 213, 0.45);
+        }}
+        .steps {{
+            background: #F5F7FC;
+            border-radius: 18px;
+            padding: 18px;
+            margin-top: 25px;
+            text-align: left;
+            font-size: 13px;
+            color: #4A5568;
+        }}
+        .steps ol {{
+            margin: 0;
+            padding-left: 20px;
+        }}
+        .steps li {{
+            margin-bottom: 8px;
+        }}
+        .steps li:last-child {{
+            margin-bottom: 0;
+        }}
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="badge">Direct Ethernet Broadcast</span>
+        <h1>Install LANShare</h1>
+        <p>Your connected peer computer ({ip}) is sharing the LANShare application with you over your local Ethernet cable.</p>
+        
+        <a href="/download/app" class="btn">⬇ Download LANShare Package (.zip)</a>
+        
+        <div class="steps">
+            <strong>Next steps on this computer:</strong>
+            <ol>
+                <li>Click <b>Download LANShare Package</b>.</li>
+                <li>Right-click the downloaded zip and choose <b>Extract All</b>.</li>
+                <li>Double click <b>LANShare.exe</b> to launch!</li>
+                <li>Both computers will automatically connect to transfer files at full speed.</li>
+            </ol>
+        </div>
+    </div>
+</body>
+</html>"""
+    return HTMLResponse(content=html)
+
+@app.get("/download/app")
+async def download_app_bundle():
+    zip_path, exe_path = get_bundle_paths()
+    if zip_path and os.path.exists(zip_path):
+        return FileResponse(zip_path, media_type="application/zip", filename="LANShare-Windows-x64.zip")
+    elif exe_path and os.path.exists(exe_path):
+        return FileResponse(exe_path, media_type="application/octet-stream", filename="LANShare.exe")
+    raise HTTPException(status_code=404, detail="Installation package not found on host machine.")

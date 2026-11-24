@@ -12,7 +12,8 @@ import {
   Sparkles, 
   Radio, 
   ChevronRight, 
-  Cpu 
+  Cpu,
+  Share2
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
@@ -60,6 +61,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             >
               <Download className="w-4 h-4" />
               <span>Receive Files</span>
+            </button>
+            <button
+              onClick={() => onNavigate('share')}
+              className="flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-[#0284C7] hover:bg-[#0369A1] text-white font-bold text-sm shadow-lg shadow-[#0284C7]/25 border border-white/20 transition-all cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
+            >
+              <Share2 className="w-4 h-4" />
+              <span>Share App (EXE)</span>
             </button>
           </div>
         </div>

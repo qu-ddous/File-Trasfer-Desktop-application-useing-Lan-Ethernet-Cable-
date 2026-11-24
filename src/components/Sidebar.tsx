@@ -9,7 +9,8 @@ import {
   Settings, 
   HardDrive, 
   Sparkles, 
-  Zap 
+  Zap,
+  Share2
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -25,6 +26,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setTab, isOnline, 
     { id: 'send', label: 'Send Files', icon: Send },
     { id: 'receive', label: 'Receive Files', icon: Download },
     { id: 'devices', label: 'LAN Devices', icon: Monitor },
+    { id: 'share', label: 'Share App (EXE)', icon: Share2, shiny: true },
     { id: 'transfers', label: 'Active Streams', icon: Activity, badge: activeCount > 0 ? activeCount : null },
     { id: 'history', label: 'Transfer History', icon: History },
     { id: 'settings', label: 'Settings', icon: Settings },
