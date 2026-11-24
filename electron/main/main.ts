@@ -6,16 +6,14 @@ let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 const backendManager = new BackendManager(52522);
 
-// Detect mode from process executable name or CLI flag
+// Unified Application Mode
 const execName = path.basename(process.execPath).toLowerCase();
-const appMode = process.argv.includes('--server') || execName.includes('server') 
+const appMode = process.argv.includes('--server')
   ? 'server' 
-  : (process.argv.includes('--client') || execName.includes('client') ? 'client' : 'full');
+  : (process.argv.includes('--client') ? 'client' : 'full');
 
 function createWindow() {
-  const windowTitle = appMode === 'server'
-    ? 'LANShare - Server Receiver'
-    : (appMode === 'client' ? 'LANShare - Client Sender' : 'LANShare - Professional Local File Transfer');
+  const windowTitle = 'LANShare - Professional LAN File Transfer';
 
   mainWindow = new BrowserWindow({
     width: 1200,

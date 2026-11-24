@@ -11,24 +11,8 @@ import { SettingsPage } from './pages/Settings/SettingsPage';
 import { ShareApp } from './pages/Share/ShareApp';
 
 const AppContent: React.FC = () => {
-  const [appMode, setAppMode] = useState<'server' | 'client' | 'full'>('full');
   const [currentTab, setCurrentTab] = useState('dashboard');
   const { networkStatus, activeTransfers } = useApp();
-
-  useEffect(() => {
-    if ((window as any).electronAPI?.getAppMode) {
-      (window as any).electronAPI.getAppMode().then((mode: 'server' | 'client' | 'full') => {
-        if (mode && (mode === 'server' || mode === 'client')) {
-          setAppMode(mode);
-          if (mode === 'server') {
-            setCurrentTab('receive');
-          } else if (mode === 'client') {
-            setCurrentTab('send');
-          }
-        }
-      });
-    }
-  }, []);
 
   return (
     <div className="flex h-screen bg-[#F8FAFC] text-[#0F172A]">
@@ -37,7 +21,6 @@ const AppContent: React.FC = () => {
         setTab={setCurrentTab}
         isOnline={networkStatus?.is_connected ?? false}
         activeCount={activeTransfers.length}
-        appMode={appMode}
       />
       <main className="flex-1 overflow-y-auto p-8">
         {currentTab === 'dashboard' && <Dashboard onNavigate={setCurrentTab} />}

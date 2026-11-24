@@ -64,29 +64,26 @@ export const ReceiveFiles: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-5xl pb-12">
-      {/* Unique Violet-Purple Shiny Header Hero */}
-      <div className="relative overflow-hidden rounded-3xl p-8 text-white shadow-xl shadow-[#7C3AED]/20 bg-gradient-to-br from-[#6D28D9] via-[#7C3AED] to-[#8B5CF6] border border-white/20">
-        <div className="absolute -right-16 -top-16 w-64 h-64 bg-white/15 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute right-32 -bottom-20 w-80 h-80 bg-[#EC4899]/20 rounded-full blur-3xl pointer-events-none" />
-
+      {/* Light Hero Banner */}
+      <div className="relative overflow-hidden rounded-3xl p-8 bg-white border border-slate-200 shadow-sm text-slate-800">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2.5 max-w-xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-xs font-bold border border-white/25 shadow-sm">
-              <Radio className="w-3.5 h-3.5 text-pink-300 animate-pulse" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-50 text-purple-700 text-xs font-bold border border-purple-100 shadow-xs">
+              <Radio className="w-3.5 h-3.5 text-purple-600 animate-pulse" />
               <span>Inbound Transfer Listener (TCP :52521)</span>
             </div>
-            <h2 className="text-3xl font-black tracking-tight drop-shadow-sm">
+            <h2 className="text-3xl font-black tracking-tight text-slate-900">
               Receive Mode & Authorization
             </h2>
-            <p className="text-white/90 text-sm font-medium leading-relaxed">
+            <p className="text-slate-600 text-sm font-medium leading-relaxed">
               Accept or decline incoming data streams from connected LAN peers. Select custom save destinations per transfer with guaranteed SHA-256 verification.
             </p>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="px-5 py-3 rounded-2xl bg-white/15 backdrop-blur-md border border-white/25 text-center shadow-lg">
-              <span className="block text-2xl font-black text-white">{incomingRequest ? 1 : 0}</span>
-              <span className="text-[11px] font-bold text-white/80 uppercase">Pending Prompts</span>
+            <div className="px-5 py-3 rounded-2xl bg-purple-50 border border-purple-100 text-center shadow-xs">
+              <span className="block text-2xl font-black text-purple-800">{incomingRequest ? 1 : 0}</span>
+              <span className="text-[11px] font-bold text-purple-600 uppercase">Pending Prompts</span>
             </div>
           </div>
         </div>

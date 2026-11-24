@@ -52,21 +52,18 @@ export const TransferHistory: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-6xl pb-12">
-      {/* Unique Rose-Pink Shiny Header Hero */}
-      <div className="relative overflow-hidden rounded-3xl p-8 text-white shadow-xl shadow-[#E11D48]/20 bg-gradient-to-br from-[#BE123C] via-[#E11D48] to-[#FB7185] border border-white/20">
-        <div className="absolute -right-16 -top-16 w-64 h-64 bg-white/15 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute right-32 -bottom-20 w-80 h-80 bg-[#F43F5E]/20 rounded-full blur-3xl pointer-events-none" />
-
+      {/* Light Hero Banner */}
+      <div className="relative overflow-hidden rounded-3xl p-8 bg-white border border-slate-200 shadow-sm text-slate-800">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2.5 max-w-xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-xs font-bold border border-white/25 shadow-sm">
-              <Database className="w-3.5 h-3.5 text-pink-200" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-50 text-rose-700 text-xs font-bold border border-rose-100 shadow-xs">
+              <Database className="w-3.5 h-3.5 text-rose-600" />
               <span>SQLite Persistent Audit Log</span>
             </div>
-            <h2 className="text-3xl font-black tracking-tight drop-shadow-sm">
+            <h2 className="text-3xl font-black tracking-tight text-slate-900">
               Transfer Logs & History
             </h2>
-            <p className="text-white/90 text-sm font-medium leading-relaxed">
+            <p className="text-slate-600 text-sm font-medium leading-relaxed">
               Permanent record of all completed, received, and cancelled transfers stored locally on your machine.
             </p>
           </div>
@@ -75,9 +72,9 @@ export const TransferHistory: React.FC = () => {
             {history.length > 0 && (
               <button
                 onClick={handleClearHistory}
-                className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs backdrop-blur-md border border-white/30 transition-all cursor-pointer shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-rose-50 text-rose-700 hover:bg-rose-100 font-bold text-xs border border-rose-200 transition-all cursor-pointer shadow-xs hover:shadow-sm transform hover:-translate-y-0.5"
               >
-                <Trash2 className="w-4 h-4" /> Clear Logs
+                <Trash2 className="w-4 h-4 text-rose-600" /> Clear Logs
               </button>
             )}
           </div>

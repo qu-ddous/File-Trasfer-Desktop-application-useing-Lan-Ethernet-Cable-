@@ -21,56 +21,35 @@ interface SidebarProps {
   appMode?: 'server' | 'client' | 'full';
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setTab, isOnline, activeCount, appMode = 'full' }) => {
-  let navItems = [
+export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setTab, isOnline, activeCount }) => {
+  const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'send', label: 'Send Files', icon: Send },
     { id: 'receive', label: 'Receive Files', icon: Download },
     { id: 'devices', label: 'LAN Devices', icon: Monitor },
-    { id: 'share', label: 'Share App (EXE)', icon: Share2, shiny: true },
+    { id: 'share', label: 'Share App (EXE)', icon: Share2 },
     { id: 'transfers', label: 'Active Streams', icon: Activity, badge: activeCount > 0 ? activeCount : null },
     { id: 'history', label: 'Transfer History', icon: History },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
-  if (appMode === 'server') {
-    navItems = [
-      { id: 'receive', label: 'Receive Server', icon: Download },
-      { id: 'devices', label: 'Connected Peers', icon: Monitor },
-      { id: 'share', label: 'Share Client App', icon: Share2, shiny: true },
-      { id: 'transfers', label: 'Active Streams', icon: Activity, badge: activeCount > 0 ? activeCount : null },
-      { id: 'history', label: 'Transfer History', icon: History },
-      { id: 'settings', label: 'Server Settings', icon: Settings },
-    ];
-  } else if (appMode === 'client') {
-    navItems = [
-      { id: 'send', label: 'Send Files (Client)', icon: Send },
-      { id: 'devices', label: 'Select Server PC', icon: Monitor },
-      { id: 'transfers', label: 'Active Streams', icon: Activity, badge: activeCount > 0 ? activeCount : null },
-      { id: 'history', label: 'Transfer History', icon: History },
-      { id: 'settings', label: 'Settings', icon: Settings },
-    ];
-  }
-
   return (
-    <aside className="w-64 bg-white border-r border-[#E6EAF2] flex flex-col justify-between select-none shadow-sm z-20">
+    <aside className="w-64 bg-white border-r border-slate-200 flex flex-col justify-between select-none shadow-sm z-20">
       <div>
         {/* Brand Header */}
-        <div className="h-20 flex items-center px-6 gap-3.5 border-b border-[#E6EAF2]">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#3157D5] via-[#486EE6] to-[#7B8EF8] flex items-center justify-center text-white shadow-md shadow-[#3157D5]/25">
+        <div className="h-20 flex items-center px-6 gap-3.5 border-b border-slate-200">
+          <div className="w-10 h-10 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-500/25">
             <Zap className="w-5 h-5 fill-white" />
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <h1 className="font-black text-lg text-[#0F172A] tracking-tight">LANShare</h1>
-              <span className={`px-1.5 py-0.2 rounded-md font-extrabold text-[9px] ${
-                appMode === 'server' ? 'bg-[#7C3AED]/15 text-[#7C3AED]' : (appMode === 'client' ? 'bg-[#0D9488]/15 text-[#0D9488]' : 'bg-[#3157D5]/10 text-[#3157D5]')
-              }`}>
-                {appMode === 'server' ? 'SERVER' : (appMode === 'client' ? 'CLIENT' : 'PRO')}
+              <h1 className="font-black text-lg text-slate-900 tracking-tight">LANShare</h1>
+              <span className="px-2 py-0.5 rounded-md font-extrabold text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200">
+                OFFLINE
               </span>
             </div>
-            <p className="text-[11px] text-[#64748B] font-medium -mt-0.5">
-              {appMode === 'server' ? 'Dedicated Receiver' : (appMode === 'client' ? 'Dedicated Sender' : 'Offline Gigabit Transfer')}
+            <p className="text-[11px] text-slate-500 font-medium -mt-0.5">
+              Local Gigabit Transfer
             </p>
           </div>
         </div>
@@ -86,17 +65,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setTab, isOnline, 
                 onClick={() => setTab(item.id)}
                 className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-gradient-to-r from-[#3157D5] to-[#486EE6] text-white shadow-md shadow-[#3157D5]/25 transform translate-x-1'
-                    : 'text-[#758096] hover:bg-[#F5F7FC] hover:text-[#20263A]'
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25 transform translate-x-1'
+                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-[#758096]'}`} />
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-500'}`} />
                   <span>{item.label}</span>
                 </div>
                 {item.badge !== null && item.badge !== undefined && (
                   <span className={`px-2 py-0.5 text-[10px] rounded-full font-black ${
-                    isActive ? 'bg-white text-[#3157D5]' : 'bg-[#3157D5] text-white animate-pulse'
+                    isActive ? 'bg-white text-blue-600' : 'bg-blue-600 text-white animate-pulse'
                   }`}>
                     {item.badge}
                   </span>

@@ -51,21 +51,18 @@ export const Devices: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-6xl pb-12">
-      {/* Unique Indigo-Blue Shiny Header Hero */}
-      <div className="relative overflow-hidden rounded-3xl p-8 text-white shadow-xl shadow-[#4F46E5]/20 bg-gradient-to-br from-[#3730A3] via-[#4F46E5] to-[#6366F1] border border-white/20">
-        <div className="absolute -right-16 -top-16 w-64 h-64 bg-white/15 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute right-32 -bottom-20 w-80 h-80 bg-[#06B6D4]/25 rounded-full blur-3xl pointer-events-none" />
-
+      {/* Light Hero Banner */}
+      <div className="relative overflow-hidden rounded-3xl p-8 bg-white border border-slate-200 shadow-sm text-slate-800">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2.5 max-w-xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-xs font-bold border border-white/25 shadow-sm">
-              <Radio className="w-3.5 h-3.5 text-cyan-300 animate-pulse" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-bold border border-indigo-100 shadow-xs">
+              <Radio className="w-3.5 h-3.5 text-indigo-600 animate-pulse" />
               <span>UDP Broadcast Beacon (Port 52520)</span>
             </div>
-            <h2 className="text-3xl font-black tracking-tight drop-shadow-sm">
+            <h2 className="text-3xl font-black tracking-tight text-slate-900">
               LAN Network Devices
             </h2>
-            <p className="text-white/90 text-sm font-medium leading-relaxed">
+            <p className="text-slate-600 text-sm font-medium leading-relaxed">
               Auto-discover peers on the Ethernet network segment. Manage trust status or connect directly by manual IP address when broadcast packets are filtered.
             </p>
           </div>
@@ -73,7 +70,7 @@ export const Devices: React.FC = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={() => refreshDevices()}
-              className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs backdrop-blur-md border border-white/30 transition-all cursor-pointer shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-500/20 transition-all cursor-pointer hover:shadow-lg transform hover:-translate-y-0.5"
             >
               <RefreshCw className="w-4 h-4" /> Scan Network
             </button>

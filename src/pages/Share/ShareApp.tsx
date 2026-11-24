@@ -44,29 +44,26 @@ export const ShareApp: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-5xl pb-12 animate-fade-in">
-      {/* Unique Shiny Cyan-Blue Gradient Header Hero */}
-      <div className="relative overflow-hidden rounded-3xl p-8 text-white shadow-xl shadow-[#0284C7]/20 bg-gradient-to-br from-[#0369A1] via-[#0284C7] to-[#38BDF8] border border-white/20">
-        <div className="absolute -right-16 -top-16 w-64 h-64 bg-white/15 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute right-32 -bottom-20 w-80 h-80 bg-[#6366F1]/20 rounded-full blur-3xl pointer-events-none" />
-
+      {/* Light Hero Banner */}
+      <div className="relative overflow-hidden rounded-3xl p-8 bg-white border border-slate-200 shadow-sm text-slate-800">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2.5 max-w-xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-xs font-bold border border-white/25 shadow-sm">
-              <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-50 text-sky-700 text-xs font-bold border border-sky-100 shadow-xs">
+              <Sparkles className="w-3.5 h-3.5 text-sky-600" />
               <span>Zero-Config Peer Bootstrapper</span>
             </div>
-            <h2 className="text-3xl font-black tracking-tight drop-shadow-sm">
+            <h2 className="text-3xl font-black tracking-tight text-slate-900">
               Share Application via Ethernet
             </h2>
-            <p className="text-white/90 text-sm font-medium leading-relaxed">
+            <p className="text-slate-600 text-sm font-medium leading-relaxed">
               If the other computer does not have LANShare installed yet, send it directly through the connected Ethernet cable using your built-in local web server.
             </p>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="px-5 py-3 rounded-2xl bg-white/15 backdrop-blur-md border border-white/25 text-center shadow-lg">
-              <span className="block text-2xl font-black text-white">:52522</span>
-              <span className="text-[11px] font-bold text-white/80 uppercase">HTTP Port</span>
+            <div className="px-5 py-3 rounded-2xl bg-sky-50 border border-sky-100 text-center shadow-xs">
+              <span className="block text-2xl font-black text-sky-800">:52522</span>
+              <span className="text-[11px] font-bold text-sky-600 uppercase">HTTP Port</span>
             </div>
           </div>
         </div>

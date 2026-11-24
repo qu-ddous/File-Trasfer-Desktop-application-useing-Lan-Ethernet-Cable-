@@ -29,29 +29,26 @@ export const ActiveTransfers: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-6xl pb-12">
-      {/* Unique Amber-Orange Shiny Header Hero */}
-      <div className="relative overflow-hidden rounded-3xl p-8 text-white shadow-xl shadow-[#EA580C]/20 bg-gradient-to-br from-[#C2410C] via-[#EA580C] to-[#F97316] border border-white/20">
-        <div className="absolute -right-16 -top-16 w-64 h-64 bg-white/15 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute right-32 -bottom-20 w-80 h-80 bg-[#FBBF24]/20 rounded-full blur-3xl pointer-events-none" />
-
+      {/* Light Hero Banner */}
+      <div className="relative overflow-hidden rounded-3xl p-8 bg-white border border-slate-200 shadow-sm text-slate-800">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2.5 max-w-xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-xs font-bold border border-white/25 shadow-sm">
-              <Gauge className="w-3.5 h-3.5 text-yellow-200 animate-spin-slow" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 text-amber-800 text-xs font-bold border border-amber-200 shadow-xs">
+              <Gauge className="w-3.5 h-3.5 text-amber-600 animate-spin-slow" />
               <span>Real-Time Socket Stream Throughput</span>
             </div>
-            <h2 className="text-3xl font-black tracking-tight drop-shadow-sm">
+            <h2 className="text-3xl font-black tracking-tight text-slate-900">
               Active Transfers & Monitoring
             </h2>
-            <p className="text-white/90 text-sm font-medium leading-relaxed">
+            <p className="text-slate-600 text-sm font-medium leading-relaxed">
               Track live byte streaming, instant link throughput, and progress bars fed directly by kernel socket buffers over TCP.
             </p>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="px-5 py-3 rounded-2xl bg-white/15 backdrop-blur-md border border-white/25 text-center shadow-lg">
-              <span className="block text-2xl font-black text-white">{activeTransfers.length}</span>
-              <span className="text-[11px] font-bold text-white/80 uppercase">In-Flight Streams</span>
+            <div className="px-5 py-3 rounded-2xl bg-amber-50 border border-amber-200 text-center shadow-xs">
+              <span className="block text-2xl font-black text-amber-800">{activeTransfers.length}</span>
+              <span className="text-[11px] font-bold text-amber-700 uppercase">In-Flight Streams</span>
             </div>
           </div>
         </div>

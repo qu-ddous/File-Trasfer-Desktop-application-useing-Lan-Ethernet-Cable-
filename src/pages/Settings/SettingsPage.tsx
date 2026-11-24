@@ -61,19 +61,19 @@ export const SettingsPage: React.FC = () => {
   return (
     <div className="space-y-6 max-w-4xl pb-10">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="bg-white rounded-3xl p-7 border border-slate-200 shadow-sm flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-black text-[#20263A] tracking-tight flex items-center gap-2">
-            <span className="p-2 rounded-xl bg-gradient-to-tr from-[#3157D5] to-[#6B7FEA] text-white shadow-md shadow-[#3157D5]/20">
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+            <span className="p-2.5 rounded-2xl bg-blue-600 text-white shadow-md shadow-blue-500/20">
               <SettingsIcon className="w-5 h-5" />
             </span>
             Preferences & Configuration
           </h2>
-          <p className="text-xs text-[#758096] mt-1">Configure your network identity, high-speed sockets, and secure storage destination</p>
+          <p className="text-xs text-slate-600 font-medium mt-1">Configure your network identity, high-speed sockets, and secure storage destination</p>
         </div>
 
         {savedMsg && (
-          <div className="px-4 py-2 rounded-xl bg-[#22A06B] text-white text-xs font-bold shadow-lg shadow-[#22A06B]/25 flex items-center gap-2 animate-bounce">
+          <div className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold shadow-md shadow-emerald-500/20 flex items-center gap-2 animate-bounce">
             <CheckCircle2 className="w-4 h-4" /> Preferences Saved!
           </div>
         )}
@@ -208,7 +208,7 @@ export const SettingsPage: React.FC = () => {
         <div className="flex justify-end pt-2">
           <button
             type="submit"
-            className="flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-gradient-to-r from-[#3157D5] to-[#486EE6] hover:from-[#2545B8] hover:to-[#3157D5] text-white font-bold text-xs transition-all shadow-lg shadow-[#3157D5]/25 hover:shadow-xl hover:shadow-[#3157D5]/35 cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
+            className="flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-all shadow-md shadow-blue-500/20 hover:shadow-lg cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
           >
             <Save className="w-4 h-4" /> Save All Preferences
           </button>

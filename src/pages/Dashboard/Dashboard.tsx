@@ -26,22 +26,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
 
   return (
     <div className="space-y-6 pb-8">
-      {/* Hero Shiny Gradient Banner */}
-      <div className="relative overflow-hidden rounded-3xl p-8 text-white shadow-xl shadow-[#3157D5]/20 bg-gradient-to-br from-[#1E3BB3] via-[#3157D5] to-[#7B8EF8] border border-white/20">
-        {/* Glow overlay circles */}
-        <div className="absolute -right-16 -top-16 w-64 h-64 bg-white/15 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute right-32 -bottom-20 w-80 h-80 bg-[#22A06B]/20 rounded-full blur-3xl pointer-events-none" />
-
+      {/* Light Hero Banner */}
+      <div className="relative overflow-hidden rounded-3xl p-8 bg-white border border-slate-200 shadow-sm text-slate-800">
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-3 max-w-xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-xs font-bold border border-white/20 shadow-xs tracking-wide">
-              <Sparkles className="w-3.5 h-3.5 text-yellow-300 animate-spin-slow" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold border border-blue-100 shadow-xs tracking-wide">
+              <Sparkles className="w-3.5 h-3.5 text-blue-600" />
               <span>Offline Direct Gigabit Link</span>
             </div>
-            <h2 className="text-3xl font-black tracking-tight text-white drop-shadow-sm">
+            <h2 className="text-3xl font-black tracking-tight text-slate-900">
               LANShare Peer-to-Peer
             </h2>
-            <p className="text-white/85 text-sm font-medium leading-relaxed">
+            <p className="text-slate-600 text-sm font-medium leading-relaxed">
               Ultra-fast offline file and folder streaming directly across your Ethernet network cable.
               Zero cloud latency, end-to-end SHA-256 integrity, and complete hardware bandwidth utilization.
             </p>
@@ -50,23 +46,23 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={() => onNavigate('send')}
-              className="flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-white text-[#1E3BB3] font-bold text-sm shadow-lg shadow-black/10 hover:shadow-xl hover:bg-slate-50 transition-all cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
+              className="flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md shadow-blue-500/20 transition-all cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
             >
-              <Send className="w-4 h-4 text-[#3157D5]" />
+              <Send className="w-4 h-4 text-white" />
               <span>Send Files</span>
             </button>
             <button
               onClick={() => onNavigate('receive')}
-              className="flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-white/15 hover:bg-white/25 text-white font-bold text-sm backdrop-blur-md border border-white/30 transition-all cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
+              className="flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md shadow-emerald-500/20 transition-all cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
             >
-              <Download className="w-4 h-4" />
+              <Download className="w-4 h-4 text-white" />
               <span>Receive Files</span>
             </button>
             <button
               onClick={() => onNavigate('share')}
-              className="flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-[#0284C7] hover:bg-[#0369A1] text-white font-bold text-sm shadow-lg shadow-[#0284C7]/25 border border-white/20 transition-all cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
+              className="flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm shadow-md shadow-slate-900/10 transition-all cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
             >
-              <Share2 className="w-4 h-4" />
+              <Share2 className="w-4 h-4 text-white" />
               <span>Share App (EXE)</span>
             </button>
           </div>
@@ -201,7 +197,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                   </span>
                   <button
                     onClick={() => onNavigate('send')}
-                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#3157D5] to-[#486EE6] text-white text-xs font-bold shadow-md shadow-[#3157D5]/20 hover:shadow-lg transition-all cursor-pointer"
+                    className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm shadow-blue-500/20 hover:shadow-md transition-all cursor-pointer"
                   >
                     Send File
                   </button>
