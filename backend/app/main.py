@@ -280,9 +280,10 @@ async def connect_manual_device(req: ConnectManualRequest):
 
 @app.delete("/api/devices/{device_id}")
 async def remove_device(device_id: str):
-    if discovery_engine and device_id in discovery_engine.known_peers:
-        del discovery_engine.known_peers[device_id]
+    if discovery_engine:
+        discovery_engine.remove_peer(device_id)
     delete_device(device_id)
+    await broadcast_ws_event({"event": "device_lost", "data": {"device_id": device_id}})
     return {"status": "success", "device_id": device_id}
 
 @app.post("/api/devices/pair")
@@ -378,6 +379,12 @@ async def read_settings():
 @app.put("/api/settings")
 async def update_settings(cfg: AppSettings):
     save_settings(cfg)
+    if discovery_engine:
+        discovery_engine.device_name = cfg.device_name
+        asyncio.create_task(discovery_engine.broadcast_beacon_once())
+    if transfer_engine:
+        transfer_engine.device_name = cfg.device_name
+    logger.info(f"Updated settings: local device name is now '{cfg.device_name}'")
     return {"status": "saved", "settings": cfg}
 
 # ----------------- Quick Share App Installer Over LAN -----------------

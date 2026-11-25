@@ -18,18 +18,23 @@ import {
 import { useApp } from '../../context/AppContext';
 import { api } from '../../services/api';
 import { formatBytes } from '../../utils/formatters';
+import { NetworkDataFlow } from '../../components/NetworkDataFlow';
+import { useToast } from '../../context/ToastContext';
 
 interface SendFilesProps {
   onNavigate: (tab: string) => void;
 }
 
 export const SendFiles: React.FC<SendFilesProps> = ({ onNavigate }) => {
-  const { devices, refreshTransfers } = useApp();
+  const { devices, refreshTransfers, networkStatus } = useApp();
+  const { showToast } = useToast();
   const [selectedPaths, setSelectedPaths] = useState<string[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
   const [isSending, setIsSending] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  const selectedPeer = devices.find((d) => d.device_id === selectedDeviceId) || (devices.length > 0 ? devices[0] : undefined);
 
   const handlePickFiles = async () => {
     if ((window as any).electronAPI?.selectFiles) {
@@ -96,14 +101,17 @@ export const SendFiles: React.FC<SendFilesProps> = ({ onNavigate }) => {
       });
 
       if (res.status === 'started') {
+        showToast('success', 'Transfer Initiated', `Streaming payload to ${peer.device_name}`);
         setSuccessMsg(`Transfer initiated with ${peer.device_name}! Awaiting receiver approval.`);
         setSelectedPaths([]);
         await refreshTransfers();
         setTimeout(() => onNavigate('transfers'), 1200);
       } else {
+        showToast('error', 'Transfer Failed', res.detail || "Failed to initiate transfer.");
         setErrorMsg(res.detail || "Failed to initiate transfer.");
       }
     } catch (e: any) {
+      showToast('error', 'Transfer Error', e.message || "Failed to initiate transfer.");
       setErrorMsg(e.message || "Failed to initiate transfer.");
     } finally {
       setIsSending(false);
@@ -132,6 +140,16 @@ export const SendFiles: React.FC<SendFilesProps> = ({ onNavigate }) => {
           </div>
         </div>
       </div>
+
+      {/* Graphical Data Flow Pipeline */}
+      <NetworkDataFlow
+        mode="send"
+        localIp={networkStatus?.local_ip}
+        peerDeviceName={selectedPeer?.device_name}
+        peerIp={selectedPeer?.last_known_ip}
+        isStreaming={isSending}
+        stagedFilesCount={selectedPaths.length}
+      />
 
       {errorMsg && (
         <div className="p-4 rounded-2xl bg-[#E05252]/10 border border-[#E05252]/25 flex items-center gap-3 text-xs font-bold text-[#E05252] shadow-md shadow-[#E05252]/5">

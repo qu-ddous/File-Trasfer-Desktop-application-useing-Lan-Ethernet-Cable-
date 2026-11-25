@@ -15,9 +15,11 @@ import {
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { api } from '../../services/api';
+import { useToast } from '../../context/ToastContext';
 
 export const Devices: React.FC = () => {
   const { devices, refreshDevices, networkStatus } = useApp();
+  const { showToast } = useToast();
   const [manualIp, setManualIp] = useState('');
   const [isConnecting, setIsConnecting] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -33,11 +35,14 @@ export const Devices: React.FC = () => {
       await refreshDevices();
       setManualIp('');
       if (res && res.online) {
+        showToast('success', 'Device Connected', `${ip} is ONLINE and ready for Gigabit transfer!`);
         setFeedback(`✓ Connected! ${ip} is ONLINE and ready for Gigabit transfer.`);
       } else {
+        showToast('info', 'Device Saved', `${ip} added to saved devices list.`);
         setFeedback(`✓ Saved! ${ip} has been added to your devices list and will stay saved permanently. Continual LAN beaconing active.`);
       }
     } catch (e: any) {
+      showToast('error', 'Connection Error', e.message);
       setFeedback(`IP Saved to list. Note: ${e.message}`);
       await refreshDevices();
     } finally {
@@ -51,11 +56,14 @@ export const Devices: React.FC = () => {
       const res = await api.connectManual(ip);
       await refreshDevices();
       if (res && res.online) {
+        showToast('success', 'Ping Successful', `Device at ${ip} answered on port 52521.`);
         setFeedback(`✓ Device ${ip} is ONLINE!`);
       } else {
+        showToast('warning', 'Ping Timeout', `No response from ${ip}. Check if WireDrop is running.`);
         setFeedback(`Ping sent to ${ip}. Waiting for response...`);
       }
     } catch (e: any) {
+      showToast('error', 'Ping Failed', e.message);
       setFeedback(`Ping error: ${e.message}`);
     } finally {
       setIsConnecting(false);
@@ -63,23 +71,30 @@ export const Devices: React.FC = () => {
   };
 
   const handleDeleteDevice = async (deviceId: string) => {
+    const dev = devices.find(d => d.device_id === deviceId);
+    const devName = dev?.device_name || 'Device';
     try {
       await api.deleteDevice(deviceId);
       await refreshDevices();
-      setFeedback('Device removed from your list.');
+      showToast('success', 'Device Removed', `${devName} has been removed from saved computers.`);
+      setFeedback(`✓ ${devName} removed from your list.`);
     } catch (e: any) {
+      showToast('error', 'Error Removing Device', e.message || 'Could not delete device.');
       console.error('Delete device error:', e);
     }
   };
 
   const handleTrust = async (deviceId: string) => {
+    const dev = devices.find(d => d.device_id === deviceId);
     await api.pairDevice(deviceId, 'trust');
     await refreshDevices();
+    showToast('success', 'Device Trusted', `Transfers from ${dev?.device_name || 'this device'} will be auto-accepted.`);
   };
 
   const handleUnpair = async (deviceId: string) => {
     await api.pairDevice(deviceId, 'unpair');
     await refreshDevices();
+    showToast('info', 'Device Untrusted', 'Manual approval required for transfers.');
   };
 
   return (

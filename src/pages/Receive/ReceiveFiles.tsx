@@ -15,9 +15,12 @@ import {
 import { useApp } from '../../context/AppContext';
 import { api } from '../../services/api';
 import { formatBytes } from '../../utils/formatters';
+import { NetworkDataFlow } from '../../components/NetworkDataFlow';
+import { useToast } from '../../context/ToastContext';
 
 export const ReceiveFiles: React.FC = () => {
-  const { incomingRequest, setIncomingRequest, refreshTransfers } = useApp();
+  const { incomingRequest, setIncomingRequest, refreshTransfers, networkStatus, activeTransfers } = useApp();
+  const { showToast } = useToast();
   const [savePath, setSavePath] = useState<string>('');
   const [isDeciding, setIsDeciding] = useState(false);
 
@@ -39,9 +42,11 @@ export const ReceiveFiles: React.FC = () => {
         incomingRequest.transfer_id, 
         savePath || incomingRequest.default_save_path
       );
+      showToast('success', 'Transfer Accepted', `Receiving ${incomingRequest.total_items} items from ${incomingRequest.sender_name}`);
       setIncomingRequest(null);
       await refreshTransfers();
-    } catch (e) {
+    } catch (e: any) {
+      showToast('error', 'Accept Failed', e.message || 'Could not accept transfer');
       console.error("Accept failed", e);
     } finally {
       setIsDeciding(false);
@@ -53,14 +58,18 @@ export const ReceiveFiles: React.FC = () => {
     setIsDeciding(true);
     try {
       await api.rejectTransfer(incomingRequest.transfer_id);
+      showToast('info', 'Transfer Declined', `Declined stream from ${incomingRequest.sender_name}`);
       setIncomingRequest(null);
       await refreshTransfers();
-    } catch (e) {
+    } catch (e: any) {
+      showToast('error', 'Reject Failed', e.message || 'Could not reject transfer');
       console.error("Reject failed", e);
     } finally {
       setIsDeciding(false);
     }
   };
+
+  const receivingTransfer = activeTransfers.find(t => t.direction === 'receive' && t.status === 'transferring');
 
   return (
     <div className="space-y-6 w-full pb-12">
@@ -84,6 +93,17 @@ export const ReceiveFiles: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Graphical Data Flow Pipeline */}
+      <NetworkDataFlow
+        mode="receive"
+        localIp={networkStatus?.local_ip}
+        peerDeviceName={incomingRequest?.sender_name || receivingTransfer?.peer_name}
+        peerIp={incomingRequest?.peer_ip}
+        isStreaming={Boolean(receivingTransfer)}
+        transferredBytes={receivingTransfer?.transferred_bytes || 0}
+        totalBytes={incomingRequest?.total_bytes || receivingTransfer?.total_bytes || 0}
+      />
 
       {incomingRequest ? (
         <div className="bg-white rounded-3xl border-2 border-[#7C3AED] p-8 shadow-xl shadow-[#7C3AED]/15 animate-fade-in space-y-6">

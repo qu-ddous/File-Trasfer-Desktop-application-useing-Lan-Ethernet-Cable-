@@ -17,12 +17,16 @@ import {
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
+import { NetworkDataFlow } from '../../components/NetworkDataFlow';
+
 interface DashboardProps {
   onNavigate: (tab: string) => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const { networkStatus, devices, activeTransfers } = useApp();
+  const activeTransfer = activeTransfers.length > 0 ? activeTransfers[0] : null;
+  const activePeer = devices.length > 0 ? devices[0] : null;
 
   return (
     <div className="space-y-6 pb-8">
@@ -64,6 +68,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           </div>
         </div>
       </div>
+
+      {/* Visual Graphical Node-to-Node Data Flow Pipeline */}
+      <NetworkDataFlow
+        mode="dashboard"
+        localIp={networkStatus?.local_ip}
+        peerDeviceName={activeTransfer?.peer_name || activePeer?.device_name}
+        peerIp={activePeer?.last_known_ip}
+        isStreaming={Boolean(activeTransfer && activeTransfer.status === 'transferring')}
+        transferredBytes={activeTransfer?.transferred_bytes || 0}
+        totalBytes={activeTransfer?.total_bytes || 0}
+      />
 
       {/* Colorful Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

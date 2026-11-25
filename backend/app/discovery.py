@@ -103,13 +103,15 @@ class DiscoveryEngine:
                 "last_seen": time.time()
             }
 
-            is_new = peer_id not in self.known_peers
+            old_peer = self.known_peers.get(peer_id)
+            is_new = old_peer is None
+            name_changed = (old_peer is not None and old_peer.get("device_name") != peer_data["device_name"])
             self.known_peers[peer_id] = peer_data
             
             # Persist to database
             upsert_device(peer_id, peer_data["device_name"], ip, peer_data["transfer_port"])
 
-            if is_new and self.on_device_discovered:
+            if (is_new or name_changed) and self.on_device_discovered:
                 asyncio.create_task(self.on_device_discovered(peer_data))
 
             # Reply with PONG directly to sender when PING or BEACON received
@@ -192,6 +194,45 @@ class DiscoveryEngine:
 
     def get_online_peers(self) -> List[Dict[str, Any]]:
         return list(self.known_peers.values())
+
+    def remove_peer(self, device_id: str):
+        self.known_peers.pop(device_id, None)
+        for pid, pdata in list(self.known_peers.items()):
+            if pid == device_id or pdata.get("device_id") == device_id:
+                self.known_peers.pop(pid, None)
+
+    async def broadcast_beacon_once(self):
+        """Immediately transmits a beacon packet announcing updated name/config."""
+        if not self._transport or not self.running:
+            return
+        try:
+            msg = json.dumps({
+                "magic": "WIREDROP",
+                "version": "1.0",
+                "type": "BEACON",
+                "device_id": self.device_id,
+                "device_name": self.device_name,
+                "transfer_port": self.transfer_port,
+                "os": "Windows",
+                "timestamp": time.time()
+            }).encode("utf-8")
+            destinations = ["255.255.255.255"]
+            for iface in get_network_interfaces():
+                if iface["is_up"] and iface["broadcast"]:
+                    destinations.append(iface["broadcast"])
+            from app.database import get_devices
+            for d in get_devices():
+                target_ip = d.get("last_known_ip")
+                if target_ip and target_ip not in ("127.0.0.1", "0.0.0.0"):
+                    destinations.append(target_ip)
+            for target in set(destinations):
+                try:
+                    self._transport.sendto(msg, (target, self.discovery_port))
+                except Exception:
+                    pass
+            logger.info(f"Broadcasted updated device identity beacon: '{self.device_name}'")
+        except Exception as e:
+            logger.warning(f"Error broadcasting immediate beacon: {e}")
 
     async def add_manual_peer(self, ip: str, port: int) -> Dict[str, Any]:
         """

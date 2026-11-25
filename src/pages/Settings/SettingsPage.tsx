@@ -13,15 +13,17 @@ import {
 } from 'lucide-react';
 import { api } from '../../services/api';
 import { AppSettings } from '../../types';
+import { useToast } from '../../context/ToastContext';
 
 export const SettingsPage: React.FC = () => {
+  const { showToast } = useToast();
   const [settings, setSettings] = useState<AppSettings>({
-    device_name: 'LANShare-PC',
+    device_name: 'WireDrop-PC',
     device_id: 'default-local',
-    download_path: 'C:\\Users\\Public\\Downloads\\LANShare',
+    download_path: 'C:\\Users\\Public\\Downloads\\WireDrop',
     discovery_port: 52520,
     transfer_port: 52521,
-    auto_accept_trusted: false,
+    auto_accept_trusted: true,
     max_concurrent_transfers: 3,
     chunk_size: 524288,
     rate_limit_mbps: 0,
@@ -41,6 +43,7 @@ export const SettingsPage: React.FC = () => {
     e.preventDefault();
     await api.saveSettings(settings);
     setSavedMsg(true);
+    showToast('success', 'Settings Saved', `Your device is now broadcasting as "${settings.device_name}" to all LAN peers.`);
     setTimeout(() => setSavedMsg(false), 2500);
   };
 
