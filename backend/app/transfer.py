@@ -135,10 +135,19 @@ class TransferEngine:
             session.save_path = save_path
             self.active_transfers[transfer_id] = session
 
-            # Check if auto-accept trusted or prompt user
-            auto_accept = False
-            # If auto-accept trusted is active and device is trusted
-            # For strict safety: default requires receiver manual approval
+            # Check if auto-accept is enabled
+            auto_accept = getattr(settings, "auto_accept_all", True)
+            if not auto_accept:
+                from app.database import get_devices
+                saved_devices = get_devices()
+                is_trusted = any(
+                    (d.get("device_id") == sender_id or d.get("last_known_ip") == peer_addr[0])
+                    and d.get("paired_status") in ("trusted", "paired")
+                    for d in saved_devices
+                )
+                if is_trusted and getattr(settings, "auto_accept_trusted", True):
+                    auto_accept = True
+
             if not auto_accept:
                 # Notify UI about incoming request
                 event_obj = asyncio.Event()
@@ -167,6 +176,16 @@ class TransferEngine:
                     session.save_path = save_path
             else:
                 accepted = True
+                await self._emit_event("incoming_transfer_started", {
+                    "transfer_id": transfer_id,
+                    "sender_id": sender_id,
+                    "sender_name": sender_name,
+                    "peer_ip": peer_addr[0],
+                    "total_items": total_items,
+                    "total_bytes": total_bytes,
+                    "items": items,
+                    "save_path": save_path
+                })
 
             # Send response to sender
             if not accepted:
@@ -396,7 +415,13 @@ class TransferEngine:
         reader, writer = None, None
         try:
             logger.info(f"Connecting to peer {peer_ip}:{peer_port} for transfer {transfer_id}...")
-            reader, writer = await asyncio.open_connection(peer_ip, peer_port)
+            try:
+                connect_coro = asyncio.open_connection(peer_ip, peer_port)
+                reader, writer = await asyncio.wait_for(connect_coro, timeout=6.0)
+            except asyncio.TimeoutError:
+                raise ConnectionError(f"Connection to peer {peer_ip}:{peer_port} timed out after 6s. Ensure WireDrop is open on the target PC and Windows Firewall allows incoming sockets on port {peer_port}.")
+            except Exception as ce:
+                raise ConnectionError(f"Could not connect to {peer_ip}:{peer_port} ({ce}). Please check Ethernet cable link and verify the IP address.")
 
             # 1. Send TRANSFER_REQUEST
             req_msg = {

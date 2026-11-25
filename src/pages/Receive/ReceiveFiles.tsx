@@ -155,14 +155,31 @@ export const ReceiveFiles: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="bg-white rounded-3xl border border-[#E6EAF2] p-16 text-center shadow-md hover:shadow-lg transition-all">
-          <div className="w-16 h-16 rounded-3xl bg-purple-100/70 text-[#7C3AED] flex items-center justify-center mx-auto mb-4 shadow-sm">
-            <Download className="w-8 h-8" />
+        <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center shadow-sm space-y-6">
+          <div className="w-16 h-16 rounded-3xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto shadow-xs border border-blue-100">
+            <Radio className="w-8 h-8 animate-pulse text-blue-600" />
           </div>
-          <h3 className="font-extrabold text-lg text-[#20263A]">Socket Listener Active</h3>
-          <p className="text-xs text-[#758096] max-w-md mx-auto mt-2 leading-relaxed">
-            LANShare TCP listener is active on port 52521. When a connected peer initiates a file transmission, an authorization prompt will appear here for your approval.
-          </p>
+          <div className="space-y-2 max-w-md mx-auto">
+            <h3 className="font-extrabold text-lg text-slate-900">WireDrop Direct Socket Listener Ready</h3>
+            <p className="text-xs text-slate-500 leading-relaxed font-medium">
+              Listening on high-throughput TCP socket <code className="px-1.5 py-0.5 rounded bg-slate-100 font-mono text-slate-800 font-bold">port 52521</code>. 
+              When a connected computer transmits files or directories over the Ethernet cable, they will automatically stream here.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md mx-auto text-left pt-2">
+            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Target Save Location</span>
+              <p className="text-xs font-mono font-bold text-slate-800 mt-1 truncate">Downloads/WireDrop</p>
+            </div>
+            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Auto-Accept Mode</span>
+              <p className="text-xs font-bold text-emerald-600 mt-1 flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5" />
+                <span>Active (Direct LAN)</span>
+              </p>
+            </div>
+          </div>
         </div>
       )}
     </div>

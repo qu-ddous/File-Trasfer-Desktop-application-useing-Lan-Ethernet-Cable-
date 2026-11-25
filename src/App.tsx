@@ -9,6 +9,8 @@ import { ActiveTransfers } from './pages/Transfers/ActiveTransfers';
 import { TransferHistory } from './pages/History/TransferHistory';
 import { SettingsPage } from './pages/Settings/SettingsPage';
 import { ShareApp } from './pages/Share/ShareApp';
+import { ConsolePage } from './pages/Console/ConsolePage';
+import { IncomingTransferModal } from './components/IncomingTransferModal';
 
 const getInitialTab = () => {
   if (typeof window !== 'undefined') {
@@ -24,7 +26,8 @@ const AppContent: React.FC = () => {
   const { networkStatus, activeTransfers } = useApp();
 
   return (
-    <div className="flex h-screen bg-[#F8FAFC] text-[#0F172A]">
+    <div className="flex h-screen bg-[#F8FAFC] text-[#0F172A] relative">
+      <IncomingTransferModal />
       <Sidebar
         currentTab={currentTab}
         setTab={setCurrentTab}
@@ -39,6 +42,7 @@ const AppContent: React.FC = () => {
         {currentTab === 'share' && <ShareApp />}
         {currentTab === 'transfers' && <ActiveTransfers />}
         {currentTab === 'history' && <TransferHistory />}
+        {currentTab === 'console' && <ConsolePage />}
         {currentTab === 'settings' && <SettingsPage />}
       </main>
     </div>

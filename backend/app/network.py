@@ -37,14 +37,19 @@ def get_network_interfaces() -> List[Dict[str, Any]]:
         is_wifi = ("wi-fi" in lower_name or "wifi" in lower_name or "wlan" in lower_name or "wireless" in lower_name)
         is_loopback = ("loopback" in lower_name or "127.0.0.1" in ipv4_list)
 
+        # On Windows, direct Ethernet cable (APIPA 169.254.x.x or static IP without internet)
+        # often reports isup=False via NDIS even though the adapter is physically linked and operational.
+        effective_is_up = is_up or (len(ipv4_list) > 0 and not is_loopback)
+        effective_speed = speed if speed > 0 else (1000 if is_ethernet else 100)
+
         for ip in ipv4_list:
             interfaces.append({
                 "interface_name": iface_name,
                 "ip_address": ip,
                 "broadcast": broadcast or "255.255.255.255",
                 "mac_address": mac or "",
-                "is_up": is_up,
-                "speed_mbps": speed,
+                "is_up": effective_is_up,
+                "speed_mbps": effective_speed,
                 "is_ethernet": is_ethernet,
                 "is_wifi": is_wifi,
                 "is_loopback": is_loopback
@@ -58,28 +63,38 @@ def get_best_lan_ip() -> Optional[Dict[str, Any]]:
     Prioritizes active physical Ethernet, then Wi-Fi, avoiding loopback and virtual adapters.
     """
     ifaces = get_network_interfaces()
-    active_ifaces = [i for i in ifaces if i["is_up"] and not i["is_loopback"] and not i["ip_address"].startswith("127.")]
+    candidates = [
+        i for i in ifaces 
+        if i["is_up"] and not i["is_loopback"] and not i["ip_address"].startswith("127.")
+    ]
     
-    # 1. Prefer active Ethernet
-    for iface in active_ifaces:
-        if iface["is_ethernet"]:
-            return iface
+    # 1. Prefer physical Ethernet with real IP
+    ethernets = [
+        i for i in candidates 
+        if i["is_ethernet"] and not ("virtual" in i["interface_name"].lower() or "vethernet" in i["interface_name"].lower())
+    ]
+    if ethernets:
+        # Prefer configured LAN/Ethernet subnet, otherwise first active ethernet
+        return ethernets[0]
             
-    # 2. Prefer any active non-virtual interface
-    for iface in active_ifaces:
-        if not ("vEthernet" in iface["interface_name"] or "Virtual" in iface["interface_name"]):
-            return iface
+    # 2. Prefer any physical non-virtual interface (e.g. Wi-Fi)
+    physical = [
+        i for i in candidates 
+        if not ("virtual" in i["interface_name"].lower() or "vethernet" in i["interface_name"].lower())
+    ]
+    if physical:
+        return physical[0]
 
-    if active_ifaces:
-        return active_ifaces[0]
+    if candidates:
+        return candidates[0]
 
     return {
-        "interface_name": "Loopback",
+        "interface_name": "No LAN Connection",
         "ip_address": "127.0.0.1",
         "broadcast": "127.255.255.255",
         "mac_address": "",
-        "is_up": True,
-        "speed_mbps": 1000,
+        "is_up": False,
+        "speed_mbps": 0,
         "is_ethernet": False,
         "is_wifi": False,
         "is_loopback": True

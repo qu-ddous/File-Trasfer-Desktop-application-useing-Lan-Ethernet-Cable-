@@ -34,6 +34,38 @@ from app.transfer import TransferEngine
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger("LANShareAPI")
 
+import collections
+import time
+
+class RingLogHandler(logging.Handler):
+    def __init__(self, capacity=1000):
+        super().__init__()
+        self.logs = collections.deque(maxlen=capacity)
+
+    def emit(self, record):
+        try:
+            msg = self.format(record)
+            entry = {
+                "id": str(time.time_ns()),
+                "time": time.strftime("%H:%M:%S", time.localtime(record.created)),
+                "level": record.levelname,
+                "logger": record.name,
+                "message": msg
+            }
+            self.logs.append(entry)
+            try:
+                loop = asyncio.get_running_loop()
+                if loop and loop.is_running():
+                    loop.create_task(broadcast_ws_event({"event": "log", "data": entry}))
+            except RuntimeError:
+                pass
+        except Exception:
+            pass
+
+ring_log_handler = RingLogHandler()
+ring_log_handler.setFormatter(logging.Formatter("%(message)s"))
+logging.getLogger().addHandler(ring_log_handler)
+
 # Global instances
 discovery_engine: Optional[DiscoveryEngine] = None
 transfer_engine: Optional[TransferEngine] = None
@@ -122,6 +154,69 @@ class ConnectManualRequest(BaseModel):
 class PairRequest(BaseModel):
     device_id: str
     action: str  # 'pair', 'unpair', 'trust'
+
+class DiagnosticPingRequest(BaseModel):
+    ip: str
+    port: Optional[int] = DEFAULT_TRANSFER_PORT
+
+# ----------------- Endpoints -----------------
+
+@app.get("/api/logs")
+async def get_logs():
+    return {"logs": list(ring_log_handler.logs)}
+
+@app.post("/api/logs/clear")
+async def clear_logs():
+    ring_log_handler.logs.clear()
+    return {"status": "ok"}
+
+@app.post("/api/diagnostics/ping")
+async def diagnostic_ping(req: DiagnosticPingRequest):
+    t0 = time.time()
+    ip = req.ip.strip()
+    port = req.port or DEFAULT_TRANSFER_PORT
+    logger.info(f"Running diagnostic ping to {ip}:{port}...")
+    try:
+        connect_task = asyncio.open_connection(ip, port)
+        reader, writer = await asyncio.wait_for(connect_task, timeout=3.0)
+        from app.protocol import encode_message, read_message
+        writer.write(encode_message({"type": "PING"}))
+        await writer.drain()
+        pong = await asyncio.wait_for(read_message(reader), timeout=2.0)
+        writer.close()
+        try:
+            await writer.wait_closed()
+        except Exception:
+            pass
+        rtt = int((time.time() - t0) * 1000)
+        logger.info(f"Diagnostic ping to {ip}:{port} SUCCESS: {pong} ({rtt}ms)")
+        return {
+            "success": True,
+            "ip": ip,
+            "port": port,
+            "rtt_ms": rtt,
+            "device_id": pong.get("device_id", "peer"),
+            "device_name": pong.get("device_name", "WireDrop Peer"),
+            "message": f"Connected! Peer '{pong.get('device_name')}' answered on port {port} in {rtt}ms."
+        }
+    except asyncio.TimeoutError:
+        logger.warning(f"Diagnostic ping to {ip}:{port} timed out")
+        return {
+            "success": False,
+            "ip": ip,
+            "port": port,
+            "error": "Timeout",
+            "message": f"Connection timed out to {ip}:{port}. Check if WireDrop is open on the target PC and Windows Firewall allows incoming connections on port {port}."
+        }
+    except Exception as e:
+        logger.warning(f"Diagnostic ping to {ip}:{port} failed: {e}")
+        return {
+            "success": False,
+            "ip": ip,
+            "port": port,
+            "error": str(e),
+            "message": f"Cannot connect to {ip}:{port} ({e}). Ensure Ethernet cable is connected and both computers are on the same subnet (e.g. 192.168.x.x or 169.254.x.x)."
+        }
 
 # ----------------- Endpoints -----------------
 

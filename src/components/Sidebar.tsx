@@ -10,7 +10,8 @@ import {
   HardDrive, 
   Sparkles, 
   Zap,
-  Share2
+  Share2,
+  Terminal
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -30,6 +31,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setTab, isOnline, 
     { id: 'share', label: 'Share App (EXE)', icon: Share2 },
     { id: 'transfers', label: 'Active Streams', icon: Activity, badge: activeCount > 0 ? activeCount : null },
     { id: 'history', label: 'Transfer History', icon: History },
+    { id: 'console', label: 'Console & Logs', icon: Terminal },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
@@ -44,8 +46,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setTab, isOnline, 
           <div>
             <div className="flex items-center gap-1.5">
               <h1 className="font-black text-lg text-slate-900 tracking-tight">WireDrop</h1>
-              <span className="px-2 py-0.5 rounded-md font-extrabold text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200">
-                OFFLINE
+              <span className={`px-2 py-0.5 rounded-md font-extrabold text-[10px] ${
+                isOnline ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-600 border border-slate-200'
+              }`}>
+                {isOnline ? 'ONLINE' : 'LAN READY'}
               </span>
             </div>
             <p className="text-[11px] text-slate-500 font-medium -mt-0.5">

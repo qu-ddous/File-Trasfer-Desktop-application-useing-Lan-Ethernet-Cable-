@@ -1,16 +1,19 @@
 import React, { useEffect, useState, createContext, useContext } from 'react';
 import { api } from '../services/api';
-import { PeerDevice, NetworkStatus, TransferSessionInfo, IncomingRequestData } from '../types';
+import { PeerDevice, NetworkStatus, TransferSessionInfo, IncomingRequestData, LogEntry } from '../types';
 
 interface AppContextType {
   networkStatus: NetworkStatus | null;
   devices: PeerDevice[];
   activeTransfers: TransferSessionInfo[];
   incomingRequest: IncomingRequestData | null;
+  logs: LogEntry[];
   setIncomingRequest: (req: IncomingRequestData | null) => void;
   refreshNetwork: () => Promise<void>;
   refreshDevices: () => Promise<void>;
   refreshTransfers: () => Promise<void>;
+  refreshLogs: () => Promise<void>;
+  clearLogs: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -20,6 +23,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [devices, setDevices] = useState<PeerDevice[]>([]);
   const [activeTransfers, setActiveTransfers] = useState<TransferSessionInfo[]>([]);
   const [incomingRequest, setIncomingRequest] = useState<IncomingRequestData | null>(null);
+  const [logs, setLogs] = useState<LogEntry[]>([]);
 
   const refreshNetwork = async () => {
     try {
@@ -48,10 +52,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const refreshLogs = async () => {
+    try {
+      const res = await api.getLogs();
+      if (res && res.logs) {
+        setLogs(res.logs);
+      }
+    } catch (e) {
+      console.error('Failed to fetch logs', e);
+    }
+  };
+
+  const clearLogs = async () => {
+    try {
+      await api.clearLogs();
+      setLogs([]);
+    } catch (e) {
+      console.error('Failed to clear logs', e);
+    }
+  };
+
   useEffect(() => {
     refreshNetwork();
     refreshDevices();
     refreshTransfers();
+    refreshLogs();
 
     // Poll every 3 seconds for fallback
     const interval = setInterval(() => {
@@ -76,11 +101,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 `${msg.data.sender_name} wants to send ${msg.data.total_items} item(s)`
               );
             }
-          } else if (msg.event === 'transfer_started' || msg.event === 'transfer_progress' || msg.event === 'transfer_completed') {
+          } else if (msg.event === 'incoming_transfer_started' || msg.event === 'transfer_started' || msg.event === 'transfer_progress' || msg.event === 'transfer_completed') {
             refreshTransfers();
+            if (msg.event === 'incoming_transfer_started') {
+              setIncomingRequest(null);
+            }
           } else if (msg.event === 'device_discovered' || msg.event === 'device_lost') {
             refreshDevices();
             refreshNetwork();
+          } else if (msg.event === 'log') {
+            setLogs((prev) => [...prev.slice(-499), msg.data]);
           }
         } catch (err) {
           console.error('Error parsing WS message', err);
@@ -103,10 +133,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         devices,
         activeTransfers,
         incomingRequest,
+        logs,
         setIncomingRequest,
         refreshNetwork,
         refreshDevices,
-        refreshTransfers
+        refreshTransfers,
+        refreshLogs,
+        clearLogs
       }}
     >
       {children}

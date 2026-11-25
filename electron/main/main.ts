@@ -43,6 +43,13 @@ function createWindow() {
     });
   }
 
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if ((input.key === 'F12' || (input.control && input.shift && input.key.toLowerCase() === 'i')) && input.type === 'keyDown') {
+      mainWindow?.webContents.toggleDevTools();
+      event.preventDefault();
+    }
+  });
+
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
@@ -89,6 +96,13 @@ function setupIPC() {
   ipcMain.handle('app:notification', (_, { title, body }) => {
     if (Notification.isSupported()) {
       new Notification({ title, body }).show();
+    }
+  });
+
+  // Toggle DevTools
+  ipcMain.handle('app:toggle-devtools', () => {
+    if (mainWindow) {
+      mainWindow.webContents.toggleDevTools();
     }
   });
 }

@@ -117,6 +117,24 @@ export const api = {
       method: 'DELETE'
     }, { status: 'history_cleared' });
   },
+  getLogs: async () => {
+    return safeFetch(`${API_BASE}/logs`, undefined, { logs: [] });
+  },
+  clearLogs: async () => {
+    return safeFetch(`${API_BASE}/logs/clear`, { method: 'POST' }, { status: 'ok' });
+  },
+  testPing: async (ip: string, port = 52521) => {
+    return safeFetch(`${API_BASE}/diagnostics/ping`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ip, port })
+    }, {
+      success: false,
+      ip,
+      port,
+      message: 'Failed to contact local backend diagnostic service.'
+    });
+  },
   getSettings: async () => {
     const cached = localStorage.getItem('lanshare_settings');
     const defaultData = cached ? JSON.parse(cached) : DEFAULT_SETTINGS;

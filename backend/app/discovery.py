@@ -231,14 +231,25 @@ class DiscoveryEngine:
         tcp_online = False
         try:
             connect_task = asyncio.open_connection(ip, transfer_port)
-            reader, writer = await asyncio.wait_for(connect_task, timeout=1.5)
+            reader, writer = await asyncio.wait_for(connect_task, timeout=2.0)
+            from app.protocol import encode_message, read_message
+            writer.write(encode_message({"type": "PING"}))
+            await writer.drain()
+            try:
+                pong = await asyncio.wait_for(read_message(reader), timeout=2.0)
+                if isinstance(pong, dict) and pong.get("type") == "PONG":
+                    peer_id = pong.get("device_id", peer_id)
+                    peer_name = pong.get("device_name", peer_name)
+            except Exception:
+                pass
             writer.close()
             try:
                 await writer.wait_closed()
             except Exception:
                 pass
             tcp_online = True
-        except Exception:
+        except Exception as e:
+            logger.info(f"TCP socket check to {ip}:{transfer_port} failed: {e}")
             tcp_online = False
 
         if tcp_online:

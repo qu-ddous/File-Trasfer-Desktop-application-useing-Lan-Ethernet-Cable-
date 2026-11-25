@@ -74,3 +74,22 @@ export interface IncomingRequestData {
   }>;
   default_save_path: string;
 }
+
+export interface LogEntry {
+  id: string;
+  time: string;
+  level: string;
+  logger: string;
+  message: string;
+}
+
+export interface DiagnosticPingResult {
+  success: boolean;
+  ip: string;
+  port: number;
+  rtt_ms?: number;
+  device_id?: string;
+  device_name?: string;
+  message: string;
+  error?: string;
+}
