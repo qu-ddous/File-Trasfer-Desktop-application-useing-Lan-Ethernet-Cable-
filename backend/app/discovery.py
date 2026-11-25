@@ -60,7 +60,11 @@ class DiscoveryEngine:
                 proto_self.engine._handle_datagram(data, addr)
 
             def error_received(proto_self, exc):
-                logger.error(f"UDP Error received: {exc}")
+                err_str = str(exc)
+                if any(code in err_str for code in ("1231", "1232", "10051", "10065")):
+                    logger.debug(f"UDP unrouted broadcast warning (cable unplugged or interface down): {exc}")
+                else:
+                    logger.warning(f"UDP protocol notice: {exc}")
 
         transport, protocol = await loop.create_datagram_endpoint(
             lambda: UDPProtocol(self),
