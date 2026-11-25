@@ -190,7 +190,7 @@ export const ConsolePage: React.FC = () => {
 
         {/* Ping Result Banner */}
         {pingResult && (
-          <div className={`p-4 rounded-2xl border text-xs font-medium space-y-1.5 animate-fade-in ${
+          <div className={`p-4 rounded-2xl border text-xs font-medium space-y-2 animate-fade-in ${
             pingResult.success 
               ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
               : 'bg-rose-50 border-rose-200 text-rose-800'
@@ -204,13 +204,34 @@ export const ConsolePage: React.FC = () => {
               ) : (
                 <>
                   <AlertTriangle className="w-4 h-4 text-rose-600" />
-                  <span>Socket Connection Failed</span>
+                  <span>Socket Connection Failed (Timeout / Blocked)</span>
                 </>
               )}
             </div>
             <p className="text-[11px] opacity-90">{pingResult.message}</p>
             {pingResult.device_name && (
               <p className="text-[11px] font-bold">Peer Name: {pingResult.device_name} (ID: {pingResult.device_id})</p>
+            )}
+            {!pingResult.success && (
+              <div className="pt-2 border-t border-rose-200/60 mt-2 space-y-2 text-[11px]">
+                <p className="font-bold text-rose-900">
+                  💡 How to fix this in 10 seconds:
+                </p>
+                <ol className="list-decimal list-inside space-y-1 text-rose-800">
+                  <li>Make sure WireDrop is open on the other PC (<span className="font-mono font-bold">{pingIp}</span>).</li>
+                  <li>Check if <span className="font-mono font-bold">{pingIp}</span> is an Ethernet IP. (If using LAN cable, don't use Wi-Fi IP <span className="font-mono">10.10.x.x</span> — check the Ethernet IP on the other PC's Dashboard!).</li>
+                  <li>On the target PC, run <span className="font-mono font-bold">fix-firewall.bat</span> as Administrator, or paste the command below into an Admin PowerShell.</li>
+                </ol>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText('netsh advfirewall firewall add rule name="WireDrop Sockets" dir=in action=allow protocol=TCP localport=52521 profile=any');
+                    alert("Firewall rule command copied! Paste it into Command Prompt or PowerShell (Run as Administrator) on the receiver PC.");
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-[10px] cursor-pointer shadow-xs transition-all"
+                >
+                  Copy Firewall Allow Command
+                </button>
+              </div>
             )}
           </div>
         )}
