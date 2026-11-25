@@ -2,6 +2,7 @@
   "name": "lanshare",
   "version": "1.0.0",
   "description": "Professional LAN-Based File Transfer Desktop Application",
+  "author": "LANShare",
   "main": "main.js",
   "scripts": {
     "dev": "vite",
