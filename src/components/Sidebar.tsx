@@ -43,13 +43,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setTab, isOnline, 
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <h1 className="font-black text-lg text-slate-900 tracking-tight">LANShare</h1>
+              <h1 className="font-black text-lg text-slate-900 tracking-tight">WireDrop</h1>
               <span className="px-2 py-0.5 rounded-md font-extrabold text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200">
                 OFFLINE
               </span>
             </div>
             <p className="text-[11px] text-slate-500 font-medium -mt-0.5">
-              Local Gigabit Transfer
+              Direct Gigabit Transfer
             </p>
           </div>
         </div>

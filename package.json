@@ -1,8 +1,8 @@
 {
-  "name": "lanshare",
+  "name": "wiredrop",
   "version": "1.0.0",
-  "description": "Professional LAN-Based File Transfer Desktop Application",
-  "author": "LANShare",
+  "description": "WireDrop - Professional Offline LAN & Ethernet File Transfer",
+  "author": "WireDrop",
   "main": "main.js",
   "scripts": {
     "dev": "vite",

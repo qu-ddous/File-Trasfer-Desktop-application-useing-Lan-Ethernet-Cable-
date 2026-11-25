@@ -3,19 +3,19 @@ from pathlib import Path
 from pydantic import BaseModel
 from typing import List, Optional
 
-APP_NAME = "LANShare"
+APP_NAME = "WireDrop"
 DEFAULT_DISCOVERY_PORT = 52520
 DEFAULT_TRANSFER_PORT = 52521
 DEFAULT_API_PORT = 52522
 DEFAULT_CHUNK_SIZE = 1024 * 512  # 512 KB chunks for high-speed LAN throughput
 BUFFER_SIZE = 1024 * 1024        # 1 MB socket buffer
 
-# Default storage location in User's Downloads/LANShare
-DEFAULT_DOWNLOAD_DIR = str(Path.home() / "Downloads" / "LANShare")
+# Default storage location in User's Downloads/WireDrop
+DEFAULT_DOWNLOAD_DIR = str(Path.home() / "Downloads" / "WireDrop")
 DATA_DIR = str(Path.home() / f".{APP_NAME.lower()}")
 os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(DEFAULT_DOWNLOAD_DIR, exist_ok=True)
-DB_PATH = str(Path(DATA_DIR) / "lanshare.db")
+DB_PATH = str(Path(DATA_DIR) / "wiredrop.db")
 
 class AppSettings(BaseModel):
     device_name: str

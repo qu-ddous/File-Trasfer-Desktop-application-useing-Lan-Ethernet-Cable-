@@ -29,13 +29,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
       {/* Light Hero Banner */}
       <div className="relative overflow-hidden rounded-3xl p-8 bg-white border border-slate-200 shadow-sm text-slate-800">
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div className="space-y-3 max-w-xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold border border-blue-100 shadow-xs tracking-wide">
-              <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-              <span>Offline Direct Gigabit Link</span>
-            </div>
+          <div className="space-y-2 max-w-xl">
             <h2 className="text-3xl font-black tracking-tight text-slate-900">
-              LANShare Peer-to-Peer
+              WireDrop Peer-to-Peer
             </h2>
             <p className="text-slate-600 text-sm font-medium leading-relaxed">
               Ultra-fast offline file and folder streaming directly across your Ethernet network cable.
@@ -175,9 +171,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         {devices.length === 0 ? (
           <div className="py-10 text-center bg-gradient-to-b from-[#F5F7FC] to-white rounded-2xl border-2 border-dashed border-[#E6EAF2]">
             <Monitor className="w-10 h-10 text-[#758096]/40 mx-auto mb-2" />
-            <p className="text-sm font-bold text-[#20263A]">No other LANShare peers discovered yet</p>
+            <p className="text-sm font-bold text-[#20263A]">No other WireDrop peers discovered yet</p>
             <p className="text-xs text-[#758096] max-w-sm mx-auto mt-1">
-              Connect both PCs with an Ethernet cable and start LANShare on both machines. They will detect each other automatically.
+              Connect both PCs with an Ethernet cable and start WireDrop on both machines. They will detect each other automatically.
             </p>
           </div>
         ) : (

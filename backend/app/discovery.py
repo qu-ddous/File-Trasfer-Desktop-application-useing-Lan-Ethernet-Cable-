@@ -86,7 +86,7 @@ class DiscoveryEngine:
     def _handle_datagram(self, data: bytes, addr):
         try:
             msg = json.loads(data.decode("utf-8"))
-            if msg.get("magic") != "LANSHARE" or msg.get("version") != "1.0":
+            if msg.get("magic") not in ("WIREDROP", "LANSHARE") or msg.get("version") != "1.0":
                 return
             peer_id = msg.get("device_id")
             if not peer_id or peer_id == self.device_id:
@@ -116,7 +116,7 @@ class DiscoveryEngine:
             msg_type = msg.get("type")
             if msg_type in ("PING", "BEACON") and self._transport:
                 pong = json.dumps({
-                    "magic": "LANSHARE",
+                    "magic": "WIREDROP",
                     "version": "1.0",
                     "type": "PONG",
                     "device_id": self.device_id,
@@ -138,7 +138,7 @@ class DiscoveryEngine:
         while self.running:
             try:
                 msg = json.dumps({
-                    "magic": "LANSHARE",
+                    "magic": "WIREDROP",
                     "version": "1.0",
                     "type": "BEACON",
                     "device_id": self.device_id,
@@ -214,7 +214,7 @@ class DiscoveryEngine:
         # 2. Send direct UDP PING
         try:
             msg = json.dumps({
-                "magic": "LANSHARE",
+                "magic": "WIREDROP",
                 "version": "1.0",
                 "type": "PING",
                 "device_id": self.device_id,

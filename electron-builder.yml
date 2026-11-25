@@ -1,5 +1,5 @@
-appId: com.lanshare.desktop
-productName: LANShare
+appId: com.wiredrop.desktop
+productName: WireDrop
 directories:
   output: release
   buildResources: assets
@@ -22,4 +22,4 @@ nsis:
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
   createStartMenuShortcut: true
-  shortcutName: LANShare
+  shortcutName: WireDrop

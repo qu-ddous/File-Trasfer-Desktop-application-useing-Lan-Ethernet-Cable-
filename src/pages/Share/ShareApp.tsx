@@ -47,16 +47,12 @@ export const ShareApp: React.FC = () => {
       {/* Light Hero Banner */}
       <div className="relative overflow-hidden rounded-3xl p-8 bg-white border border-slate-200 shadow-sm text-slate-800">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2.5 max-w-xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-50 text-sky-700 text-xs font-bold border border-sky-100 shadow-xs">
-              <Sparkles className="w-3.5 h-3.5 text-sky-600" />
-              <span>Zero-Config Peer Bootstrapper</span>
-            </div>
+          <div className="space-y-2 max-w-xl">
             <h2 className="text-3xl font-black tracking-tight text-slate-900">
               Share Application via Ethernet
             </h2>
             <p className="text-slate-600 text-sm font-medium leading-relaxed">
-              If the other computer does not have LANShare installed yet, send it directly through the connected Ethernet cable using your built-in local web server.
+              If the other computer does not have WireDrop installed yet, send it directly through the connected Ethernet cable using your built-in local web server.
             </p>
           </div>
 

@@ -13,7 +13,7 @@ const appMode = process.argv.includes('--server')
   : (process.argv.includes('--client') ? 'client' : 'full');
 
 function createWindow() {
-  const windowTitle = 'LANShare - Professional LAN File Transfer';
+  const windowTitle = 'WireDrop - Professional Wire & LAN File Transfer';
 
   mainWindow = new BrowserWindow({
     width: 1200,

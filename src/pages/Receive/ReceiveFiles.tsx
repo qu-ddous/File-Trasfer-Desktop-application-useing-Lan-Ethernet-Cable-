@@ -67,11 +67,7 @@ export const ReceiveFiles: React.FC = () => {
       {/* Light Hero Banner */}
       <div className="relative overflow-hidden rounded-3xl p-8 bg-white border border-slate-200 shadow-sm text-slate-800">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2.5 max-w-xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-50 text-purple-700 text-xs font-bold border border-purple-100 shadow-xs">
-              <Radio className="w-3.5 h-3.5 text-purple-600 animate-pulse" />
-              <span>Inbound Transfer Listener (TCP :52521)</span>
-            </div>
+          <div className="space-y-2 max-w-xl">
             <h2 className="text-3xl font-black tracking-tight text-slate-900">
               Receive Mode & Authorization
             </h2>

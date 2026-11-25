@@ -1,9 +1,9 @@
 const API_BASE = 'http://127.0.0.1:52522/api';
 
 const DEFAULT_SETTINGS = {
-  device_name: 'LANShare-PC',
+  device_name: 'WireDrop-PC',
   device_id: 'default-local',
-  download_path: 'C:\\Users\\Public\\Downloads\\LANShare',
+  download_path: 'C:\\Users\\Public\\Downloads\\WireDrop',
   discovery_port: 52520,
   transfer_port: 52521,
   auto_accept_trusted: false,

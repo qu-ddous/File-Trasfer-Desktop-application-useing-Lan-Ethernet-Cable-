@@ -87,11 +87,7 @@ export const Devices: React.FC = () => {
       {/* Light Hero Banner */}
       <div className="relative overflow-hidden rounded-3xl p-8 bg-white border border-slate-200 shadow-sm text-slate-800">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2.5 max-w-xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-bold border border-indigo-100 shadow-xs">
-              <Radio className="w-3.5 h-3.5 text-indigo-600 animate-pulse" />
-              <span>Direct LAN & Auto-Discovery Beacon (Port 52520)</span>
-            </div>
+          <div className="space-y-2 max-w-xl">
             <h2 className="text-3xl font-black tracking-tight text-slate-900">
               LAN Network Devices
             </h2>

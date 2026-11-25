@@ -10,5 +10,5 @@ if (fs.existsSync(primaryMain)) {
 } else if (fs.existsSync(fallbackMain)) {
   require(fallbackMain);
 } else {
-  console.error('[LANShare] Could not find compiled main entry point.');
+  console.error('[WireDrop] Could not find compiled main entry point.');
 }
