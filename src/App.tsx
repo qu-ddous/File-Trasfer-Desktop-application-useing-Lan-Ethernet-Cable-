@@ -10,8 +10,17 @@ import { TransferHistory } from './pages/History/TransferHistory';
 import { SettingsPage } from './pages/Settings/SettingsPage';
 import { ShareApp } from './pages/Share/ShareApp';
 
+const getInitialTab = () => {
+  if (typeof window !== 'undefined') {
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab');
+    if (tab) return tab;
+  }
+  return 'dashboard';
+};
+
 const AppContent: React.FC = () => {
-  const [currentTab, setCurrentTab] = useState('dashboard');
+  const [currentTab, setCurrentTab] = useState(getInitialTab);
   const { networkStatus, activeTransfers } = useApp();
 
   return (

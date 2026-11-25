@@ -18,6 +18,7 @@ Stream multi-gigabyte files, deep directory trees, and payloads directly between
 <br/>
 
 [📦 Download Installer](#-quick-download--installer) •
+[📸 UI Screenshots](#-application-interface--screenshots) •
 [✨ Key Features](#-key-features) •
 [🔌 Cable Setup Guide](#-step-by-step-ethernet-cable-connection-guide) •
 [🛠️ Tech Stack](#️-technology-stack) •
@@ -27,6 +28,43 @@ Stream multi-gigabyte files, deep directory trees, and payloads directly between
 ---
 
 </div>
+
+<br/>
+
+## 📸 Application Interface & Screenshots
+
+WireDrop is engineered with a modern, high-contrast light desktop interface designed for maximum productivity, real-time throughput monitoring, and seamless offline peer management.
+
+### 1. Peer-to-Peer Transfer Dashboard
+> Real-time link telemetry, adapter IP address resolution, rapid drag-and-drop staging zone, and live peer status.
+<p align="center">
+  <img src="docs/screenshots/dashboard.png" alt="WireDrop Dashboard" width="900" style="border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #E2E8F0;" />
+</p>
+
+---
+
+### 2. High-Speed File & Folder Transmitter
+> Payload staging with folder tree hierarchy preservation, batch item summary, individual file size calculation, and instant transmission trigger.
+<p align="center">
+  <img src="docs/screenshots/send_files.png" alt="WireDrop Send Files" width="900" style="border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #E2E8F0;" />
+</p>
+
+---
+
+### 3. LAN & Direct Cable Peer Discovery
+> Automatic UDP broadcast discovery of connected computers on the local cable link, plus manual IP pairing with persistent SQLite history (never re-enter an IP again).
+<p align="center">
+  <img src="docs/screenshots/lan_devices.png" alt="WireDrop Devices & Network" width="900" style="border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #E2E8F0;" />
+</p>
+
+---
+
+### 4. Inbound Receiver Mode & Configuration
+
+| Inbound Listener & Approval | Storage & Network Settings |
+| :---: | :---: |
+| <img src="docs/screenshots/receive_mode.png" alt="Receive Mode" width="440" style="border-radius: 6px; border: 1px solid #E2E8F0;" /> | <img src="docs/screenshots/settings.png" alt="Settings & Storage" width="440" style="border-radius: 6px; border: 1px solid #E2E8F0;" /> |
+| *Active listening socket on port `52521` with transfer confirmations.* | *Custom download directory selector with live disk space telemetry.* |
 
 <br/>
 
