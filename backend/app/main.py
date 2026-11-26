@@ -12,6 +12,7 @@ from fastapi.responses import FileResponse, HTMLResponse
 
 from app.config import (
     APP_NAME,
+    DATA_DIR,
     DEFAULT_API_PORT,
     DEFAULT_DISCOVERY_PORT,
     DEFAULT_TRANSFER_PORT,
@@ -424,49 +425,59 @@ async def update_settings(cfg: AppSettings):
 
 # ----------------- Quick Share App Installer Over LAN -----------------
 
+def get_installed_app_dir() -> Optional[str]:
+    """Finds the root directory of the running WireDrop Electron app (containing WireDrop.exe & resources/)."""
+    candidates = [
+        os.path.abspath(os.path.join(os.path.dirname(sys.executable), "..", "..")), # Programs\WireDrop\resources\backend\run.exe -> Programs\WireDrop
+        os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "release", "win-unpacked")),
+        os.path.abspath(os.path.join(os.getcwd(), "release", "win-unpacked")),
+        os.path.abspath(os.getcwd()),
+    ]
+    for d in candidates:
+        if os.path.isfile(os.path.join(d, "WireDrop.exe")) and os.path.isdir(os.path.join(d, "resources")):
+            return d
+    return None
+
 def get_bundle_paths():
     """Dynamically finds the local WireDrop Installer (.exe) and ZIP distribution package."""
+    home = os.path.expanduser("~")
     search_dirs = [
         os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "release")),
         os.path.abspath(os.path.join(os.getcwd(), "release")),
         os.path.abspath(os.path.join(sys.executable, "..", "..", "release")),
-        os.path.abspath(os.path.join(sys.executable, "..", "resources")),
-        os.path.abspath(os.path.join(os.getcwd(), "release", "win-unpacked")),
-        os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "release", "win-unpacked")),
+        os.path.abspath(os.path.join(sys.executable, "..", "..", "..", "release")),
+        os.path.join(home, "Downloads"),
+        os.path.join(home, "Desktop"),
+        DATA_DIR,
     ]
-    
+
     zip_path = None
     exe_path = None
 
-    # Preferred direct names
     preferred_exes = [
         "WireDrop Setup 1.0.0.exe",
-        "WireDrop.exe",
         "LANShare Setup 1.0.0.exe",
-        "LANShare.exe"
     ]
     preferred_zips = [
         "WireDrop-Windows-x64.zip",
-        "LANShare-Windows-x64.zip"
+        "WireDrop-Portable.zip",
+        "LANShare-Windows-x64.zip",
     ]
 
     for d in search_dirs:
         if not os.path.isdir(d):
             continue
-        # Check preferred exes
         for name in preferred_exes:
             candidate = os.path.join(d, name)
             if os.path.exists(candidate) and not exe_path:
                 exe_path = candidate
                 break
-        # Check preferred zips
         for name in preferred_zips:
             candidate = os.path.join(d, name)
             if os.path.exists(candidate) and not zip_path:
                 zip_path = candidate
                 break
 
-    # Fallback to directory scan if not matched
     for d in search_dirs:
         if not os.path.isdir(d):
             continue
@@ -476,7 +487,7 @@ def get_bundle_paths():
                 if not os.path.isfile(full_p):
                     continue
                 lower = item.lower()
-                if not exe_path and lower.endswith(".exe") and ("wiredrop" in lower or "lanshare" in lower) and not "elevate" in lower:
+                if not exe_path and lower.endswith(".exe") and ("wiredrop" in lower and "setup" in lower):
                     exe_path = full_p
                 if not zip_path and lower.endswith(".zip") and ("wiredrop" in lower or "lanshare" in lower):
                     zip_path = full_p
@@ -485,19 +496,101 @@ def get_bundle_paths():
 
     return zip_path, exe_path
 
+def build_or_get_portable_zip() -> Optional[str]:
+    """Returns an existing ZIP or packages the currently installed WireDrop app into a portable ZIP."""
+    zip_path, _ = get_bundle_paths()
+    if zip_path and os.path.exists(zip_path):
+        return zip_path
+
+    app_dir = get_installed_app_dir()
+    if not app_dir:
+        return None
+
+    target_zip = os.path.join(DATA_DIR, "WireDrop-Portable.zip")
+    # Rebuild if missing or older than WireDrop.exe / app.asar
+    asar_path = os.path.join(app_dir, "resources", "app.asar")
+    ref_mtime = max(
+        os.path.getmtime(os.path.join(app_dir, "WireDrop.exe")),
+        os.path.getmtime(asar_path) if os.path.exists(asar_path) else 0,
+    )
+    if os.path.exists(target_zip) and os.path.getmtime(target_zip) >= ref_mtime:
+        return target_zip
+
+    import zipfile
+    tmp_zip = target_zip + ".tmp"
+    logger.info(f"Creating portable WireDrop package from {app_dir}...")
+    try:
+        with zipfile.ZipFile(tmp_zip, "w", zipfile.ZIP_DEFLATED, compresslevel=1) as zf:
+            for root, _, files in os.walk(app_dir):
+                for file in files:
+                    if file.lower().startswith("uninstall"):
+                        continue
+                    full_path = os.path.join(root, file)
+                    rel_path = os.path.relpath(full_path, app_dir)
+                    zf.write(full_path, os.path.join("WireDrop", rel_path))
+        if os.path.exists(target_zip):
+            os.remove(target_zip)
+        os.rename(tmp_zip, target_zip)
+        logger.info(f"Portable WireDrop package ready: {target_zip}")
+        return target_zip
+    except Exception as e:
+        logger.error(f"Failed to create portable ZIP: {e}")
+        if os.path.exists(tmp_zip):
+            try:
+                os.remove(tmp_zip)
+            except Exception:
+                pass
+        return None
+
+def check_firewall_ports_open() -> Dict[str, bool]:
+    """Checks Windows Defender Firewall inbound rules for WireDrop ports (no admin needed)."""
+    result = {"port_52520": False, "port_52521": False, "port_52522": False, "all_open": False}
+    if sys.platform != "win32":
+        return {"port_52520": True, "port_52521": True, "port_52522": True, "all_open": True}
+    try:
+        import subprocess
+        out = subprocess.run(
+            ["netsh", "advfirewall", "firewall", "show", "rule", "name=all"],
+            capture_output=True, text=True, timeout=4
+        ).stdout
+        lower_out = out.lower()
+        result["port_52520"] = "52520" in lower_out or "wiredrop discovery" in lower_out
+        result["port_52521"] = "52521" in lower_out or "wiredrop transfer" in lower_out
+        result["port_52522"] = "52522" in lower_out or "wiredrop web share" in lower_out or "wiredrop api" in lower_out or "wiredrop all" in lower_out
+        result["all_open"] = result["port_52520"] and result["port_52521"] and result["port_52522"]
+    except Exception as e:
+        logger.debug(f"Firewall status check note: {e}")
+    return result
+
+@app.get("/api/system/firewall/status")
+async def get_firewall_status():
+    return await asyncio.to_thread(check_firewall_ports_open)
+
 @app.get("/api/share/info")
 async def get_share_app_info():
     best = get_best_lan_ip()
     ip = best["ip_address"] if best else "127.0.0.1"
+    ip_valid = bool(ip and ip != "127.0.0.1" and "Unplugged" not in ip)
+    ifaces = get_network_interfaces()
+    all_ips = [
+        i["ip_address"] for i in ifaces
+        if i["is_up"] and not i["is_loopback"] and not i["ip_address"].startswith("127.") and "Unplugged" not in i["ip_address"]
+    ]
     zip_path, exe_path = get_bundle_paths()
+    can_self_zip = get_installed_app_dir() is not None
+    fw = await asyncio.to_thread(check_firewall_ports_open)
     return {
-        "share_url": f"http://{ip}:52522/download",
-        "has_zip": zip_path is not None,
+        "share_url": f"http://{ip}:52522/download" if ip_valid else "http://127.0.0.1:52522/download",
+        "ip_valid": ip_valid,
+        "all_ips": list(dict.fromkeys(all_ips)),
+        "has_zip": (zip_path is not None) or can_self_zip,
         "has_exe": exe_path is not None,
-        "exe_name": os.path.basename(exe_path) if exe_path else "WireDrop Setup 1.0.0.exe",
-        "zip_name": os.path.basename(zip_path) if zip_path else "WireDrop-Windows-x64.zip",
+        "exe_name": os.path.basename(exe_path) if exe_path else None,
+        "zip_name": os.path.basename(zip_path) if zip_path else ("WireDrop-Portable.zip" if can_self_zip else None),
         "ip": ip,
-        "port": 52522
+        "port": 52522,
+        "firewall_open": fw["port_52522"],
+        "firewall_all_open": fw["all_open"],
     }
 
 @app.get("/download", response_class=HTMLResponse)
@@ -506,7 +599,19 @@ async def web_download_landing():
     ip = best["ip_address"] if best else "127.0.0.1"
     zip_path, exe_path = get_bundle_paths()
     has_exe = exe_path is not None
-    has_zip = zip_path is not None
+    has_zip = (zip_path is not None) or (get_installed_app_dir() is not None)
+    
+    buttons_html = ""
+    if has_exe:
+        buttons_html += '<a href="/download/exe" class="btn btn-primary">⬇ Download WireDrop Setup (.exe)</a>'
+    if has_zip:
+        btn_class = "btn btn-secondary" if has_exe else "btn btn-primary"
+        buttons_html += f'<a href="/download/zip" class="{btn_class}">📦 Download Portable WireDrop (.zip)</a>'
+    if not buttons_html:
+        buttons_html = '<p style="color:#F87171;font-weight:700;">No WireDrop package found on host machine.</p>'
+
+    step1 = "Click <strong>Download WireDrop Setup</strong> above." if has_exe else "Click <strong>Download Portable WireDrop (.zip)</strong> above."
+    step2 = "Run the downloaded installer on this computer." if has_exe else "Right-click the downloaded ZIP file and click <strong>Extract All</strong>, then open <strong>WireDrop.exe</strong>."
     
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -665,19 +770,14 @@ async def web_download_landing():
         </p>
 
         <div class="download-actions">
-            <a href="/download/exe" class="btn btn-primary">
-                ⬇ Download WireDrop Setup (.exe)
-            </a>
-            <a href="/download/zip" class="btn btn-secondary">
-                📦 Download Portable ZIP Package
-            </a>
+            {buttons_html}
         </div>
 
         <div class="guide-box">
             <h4>⚡ Quick Setup Instructions</h4>
             <ol>
-                <li>Click <strong>Download WireDrop Setup</strong> above.</li>
-                <li>Run the downloaded installer on this computer.</li>
+                <li>{step1}</li>
+                <li>{step2}</li>
                 <li>Both computers will automatically link over the Ethernet cable at <strong>1000 Mbps</strong>. No internet required!</li>
             </ol>
         </div>
@@ -705,7 +805,7 @@ async def download_exe():
 
 @app.get("/download/zip")
 async def download_zip():
-    zip_path, _ = get_bundle_paths()
+    zip_path = await asyncio.to_thread(build_or_get_portable_zip)
     if zip_path and os.path.exists(zip_path):
         filename = os.path.basename(zip_path)
         return FileResponse(
@@ -714,16 +814,14 @@ async def download_zip():
             filename=filename,
             headers={"Content-Disposition": f'attachment; filename="{filename}"'}
         )
-    raise HTTPException(status_code=404, detail="WireDrop ZIP package not found on host machine.")
+    raise HTTPException(status_code=404, detail="WireDrop ZIP package could not be built on host machine.")
 
 @app.get("/download/app")
 async def download_app_bundle():
-    zip_path, exe_path = get_bundle_paths()
+    _, exe_path = get_bundle_paths()
     if exe_path and os.path.exists(exe_path):
         return await download_exe()
-    elif zip_path and os.path.exists(zip_path):
-        return await download_zip()
-    raise HTTPException(status_code=404, detail="No distribution package found on host machine.")
+    return await download_zip()
 
 @app.post("/api/system/fix-firewall")
 async def trigger_firewall_rule():

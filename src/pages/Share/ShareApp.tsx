@@ -22,25 +22,32 @@ import { useToast } from '../../context/ToastContext';
 export const ShareApp: React.FC = () => {
   const { networkStatus } = useApp();
   const { showToast } = useToast();
-  const [shareInfo, setShareInfo] = useState({
+  const [shareInfo, setShareInfo] = useState<any>({
     share_url: 'http://127.0.0.1:52522/download',
+    ip_valid: false,
+    all_ips: [],
     has_zip: true,
-    has_exe: true,
-    exe_name: 'WireDrop Setup 1.0.0.exe',
-    zip_name: 'WireDrop-Windows-x64.zip',
+    has_exe: false,
+    exe_name: null,
+    zip_name: 'WireDrop-Portable.zip',
     ip: '127.0.0.1',
-    port: 52522
+    port: 52522,
+    firewall_open: false
   });
   const [copied, setCopied] = useState(false);
   const [copiedCmd, setCopiedCmd] = useState(false);
   const [isFixingFirewall, setIsFixingFirewall] = useState(false);
 
-  useEffect(() => {
+  const refreshShareInfo = () => {
     api.getShareInfo().then((data) => {
       if (data && data.share_url) {
         setShareInfo(data);
       }
     });
+  };
+
+  useEffect(() => {
+    refreshShareInfo();
   }, [networkStatus]);
 
   const handleCopyLink = () => {
@@ -54,10 +61,13 @@ export const ShareApp: React.FC = () => {
     setIsFixingFirewall(true);
     try {
       await api.fixFirewall();
-      showToast('success', 'Firewall Configured!', 'Windows Firewall rules for Port 52520, 52521, and 52522 added successfully.', 5000);
+      showToast('info', 'Accept UAC Prompt', 'Click "Yes" on the Windows Administrator prompt to allow Port 52522 & 52521.', 5000);
+      setTimeout(() => {
+        refreshShareInfo();
+        setIsFixingFirewall(false);
+      }, 3000);
     } catch (e) {
-      showToast('info', 'Firewall Rule Triggered', 'Please accept the Windows Administrator UAC prompt to allow incoming sockets.', 5000);
-    } finally {
+      showToast('error', 'Firewall Config Failed', 'Please run fix-firewall.bat as Administrator.', 5000);
       setIsFixingFirewall(false);
     }
   };
@@ -93,43 +103,58 @@ export const ShareApp: React.FC = () => {
         </div>
       </div>
 
-      {/* FIREWALL FIX BANNER (Solves ERR_CONNECTION_TIMED_OUT) */}
-      <div className="rounded-3xl border border-amber-200 bg-gradient-to-r from-amber-50/90 to-orange-50/90 p-6 shadow-sm">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
-          <div className="flex items-start gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-amber-500/15 border border-amber-300 text-amber-700 flex items-center justify-center shrink-0">
-              <ShieldAlert className="w-6 h-6" />
+      {/* FIREWALL STATUS BANNER */}
+      {shareInfo.firewall_open ? (
+        <div className="rounded-3xl border border-emerald-200 bg-emerald-50/80 p-5 shadow-sm flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-500/15 border border-emerald-300 text-emerald-700 flex items-center justify-center shrink-0">
+              <ShieldCheck className="w-5 h-5" />
             </div>
-            <div className="space-y-1">
-              <h4 className="font-extrabold text-sm text-amber-950 flex items-center gap-2">
-                Getting "Site Can't Be Reached (ERR_CONNECTION_TIMED_OUT)" on the other PC?
-              </h4>
-              <p className="text-xs text-amber-800/90 leading-relaxed max-w-2xl">
-                Windows Defender Firewall automatically blocks incoming Ethernet connections until you permit ports 52521 &amp; 52522. Click the 1-click button below to instantly allow WireDrop across all networks.
-              </p>
+            <div>
+              <h4 className="font-extrabold text-sm text-emerald-950">Windows Firewall Open (Port 52522 Allowed)</h4>
+              <p className="text-xs text-emerald-800">Other PCs on the Ethernet cable can open your download link in Chrome/Edge without timeouts.</p>
             </div>
           </div>
+          <span className="px-3 py-1.5 rounded-full bg-emerald-600 text-white text-xs font-bold shrink-0">Ready</span>
+        </div>
+      ) : (
+        <div className="rounded-3xl border border-amber-200 bg-gradient-to-r from-amber-50/90 to-orange-50/90 p-6 shadow-sm">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+            <div className="flex items-start gap-3.5">
+              <div className="w-11 h-11 rounded-2xl bg-amber-500/15 border border-amber-300 text-amber-700 flex items-center justify-center shrink-0">
+                <ShieldAlert className="w-6 h-6" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="font-extrabold text-sm text-amber-950 flex items-center gap-2">
+                  Port 52522 Blocked by Windows Firewall (Causes ERR_CONNECTION_TIMED_OUT)
+                </h4>
+                <p className="text-xs text-amber-800/90 leading-relaxed max-w-2xl">
+                  Windows Defender Firewall is currently blocking incoming browser requests on Port 52522. Click <strong>1-Click Allow in Firewall</strong> and accept the Windows prompt so the second PC can download WireDrop!
+                </p>
+              </div>
+            </div>
 
-          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-            <button
-              onClick={handleFixFirewall}
-              disabled={isFixingFirewall}
-              className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-xs shadow-md shadow-amber-600/25 transition-all cursor-pointer"
-            >
-              <ShieldCheck className="w-4 h-4" />
-              {isFixingFirewall ? 'Configuring...' : '1-Click Allow in Firewall'}
-            </button>
+            <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+              <button
+                onClick={handleFixFirewall}
+                disabled={isFixingFirewall}
+                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-xs shadow-md shadow-amber-600/25 transition-all cursor-pointer"
+              >
+                <ShieldCheck className="w-4 h-4" />
+                {isFixingFirewall ? 'Waiting for UAC...' : '1-Click Allow in Firewall'}
+              </button>
 
-            <button
-              onClick={handleCopyFirewallCmd}
-              className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-3 rounded-2xl bg-white border border-amber-200 text-amber-900 font-bold text-xs hover:bg-amber-50 transition-all cursor-pointer"
-            >
-              {copiedCmd ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Terminal className="w-3.5 h-3.5 text-amber-700" />}
-              {copiedCmd ? 'Command Copied' : 'Copy CMD Rule'}
-            </button>
+              <button
+                onClick={handleCopyFirewallCmd}
+                className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-3 rounded-2xl bg-white border border-amber-200 text-amber-900 font-bold text-xs hover:bg-amber-50 transition-all cursor-pointer"
+              >
+                {copiedCmd ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Terminal className="w-3.5 h-3.5 text-amber-700" />}
+                {copiedCmd ? 'Command Copied' : 'Copy CMD Rule'}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Main Sharing Guide Card */}
       <div className="bg-white rounded-3xl border border-[#E6EAF2] p-8 shadow-md hover:shadow-lg transition-all space-y-6">
@@ -151,6 +176,13 @@ export const ShareApp: React.FC = () => {
             </span>
           </div>
         </div>
+
+        {!shareInfo.ip_valid && (
+          <div className="rounded-2xl bg-rose-50 border border-rose-200 px-4 py-3 text-xs text-rose-800 font-semibold flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+            <span>No active Ethernet IP detected yet. Connect the Ethernet cable to another PC to generate your LAN share link.</span>
+          </div>
+        )}
 
         {/* Copy Link Bar */}
         <div className="bg-[#F5F7FC] rounded-2xl p-4 border border-[#E6EAF2] flex flex-col sm:flex-row items-center gap-4">
