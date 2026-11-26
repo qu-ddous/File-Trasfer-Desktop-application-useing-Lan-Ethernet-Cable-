@@ -32,7 +32,7 @@ from app.discovery import DiscoveryEngine
 from app.transfer import TransferEngine
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
-logger = logging.getLogger("LANShareAPI")
+logger = logging.getLogger("WireDropAPI")
 
 import collections
 import time
@@ -390,19 +390,64 @@ async def update_settings(cfg: AppSettings):
 # ----------------- Quick Share App Installer Over LAN -----------------
 
 def get_bundle_paths():
-    """Finds the local LANShare.exe and ZIP distribution package."""
-    candidates_zip = [
-        os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "release", "LANShare-Windows-x64.zip")),
-        os.path.abspath(os.path.join(os.getcwd(), "release", "LANShare-Windows-x64.zip")),
-        os.path.abspath(os.path.join(sys.executable, "..", "..", "release", "LANShare-Windows-x64.zip")),
+    """Dynamically finds the local WireDrop Installer (.exe) and ZIP distribution package."""
+    search_dirs = [
+        os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "release")),
+        os.path.abspath(os.path.join(os.getcwd(), "release")),
+        os.path.abspath(os.path.join(sys.executable, "..", "..", "release")),
+        os.path.abspath(os.path.join(sys.executable, "..", "resources")),
+        os.path.abspath(os.path.join(os.getcwd(), "release", "win-unpacked")),
+        os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "release", "win-unpacked")),
     ]
-    candidates_exe = [
-        os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "release", "LANShare-win32-x64", "LANShare.exe")),
-        os.path.abspath(os.path.join(os.getcwd(), "release", "LANShare-win32-x64", "LANShare.exe")),
-        os.path.abspath(os.path.join(sys.executable, "..", "..", "release", "LANShare-win32-x64", "LANShare.exe")),
+    
+    zip_path = None
+    exe_path = None
+
+    # Preferred direct names
+    preferred_exes = [
+        "WireDrop Setup 1.0.0.exe",
+        "WireDrop.exe",
+        "LANShare Setup 1.0.0.exe",
+        "LANShare.exe"
     ]
-    zip_path = next((p for p in candidates_zip if os.path.exists(p)), None)
-    exe_path = next((p for p in candidates_exe if os.path.exists(p)), None)
+    preferred_zips = [
+        "WireDrop-Windows-x64.zip",
+        "LANShare-Windows-x64.zip"
+    ]
+
+    for d in search_dirs:
+        if not os.path.isdir(d):
+            continue
+        # Check preferred exes
+        for name in preferred_exes:
+            candidate = os.path.join(d, name)
+            if os.path.exists(candidate) and not exe_path:
+                exe_path = candidate
+                break
+        # Check preferred zips
+        for name in preferred_zips:
+            candidate = os.path.join(d, name)
+            if os.path.exists(candidate) and not zip_path:
+                zip_path = candidate
+                break
+
+    # Fallback to directory scan if not matched
+    for d in search_dirs:
+        if not os.path.isdir(d):
+            continue
+        try:
+            for item in os.listdir(d):
+                full_p = os.path.join(d, item)
+                if not os.path.isfile(full_p):
+                    continue
+                lower = item.lower()
+                if not exe_path and lower.endswith(".exe") and ("wiredrop" in lower or "lanshare" in lower) and not "elevate" in lower:
+                    exe_path = full_p
+                if not zip_path and lower.endswith(".zip") and ("wiredrop" in lower or "lanshare" in lower):
+                    zip_path = full_p
+        except Exception:
+            pass
+
     return zip_path, exe_path
 
 @app.get("/api/share/info")
@@ -414,6 +459,8 @@ async def get_share_app_info():
         "share_url": f"http://{ip}:52522/download",
         "has_zip": zip_path is not None,
         "has_exe": exe_path is not None,
+        "exe_name": os.path.basename(exe_path) if exe_path else "WireDrop Setup 1.0.0.exe",
+        "zip_name": os.path.basename(zip_path) if zip_path else "WireDrop-Windows-x64.zip",
         "ip": ip,
         "port": 52522
     }
@@ -422,126 +469,243 @@ async def get_share_app_info():
 async def web_download_landing():
     best = get_best_lan_ip()
     ip = best["ip_address"] if best else "127.0.0.1"
+    zip_path, exe_path = get_bundle_paths()
+    has_exe = exe_path is not None
+    has_zip = zip_path is not None
+    
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Download LANShare - Instant LAN Installer</title>
+    <title>WireDrop - Direct Ethernet Download</title>
     <style>
+        * {{ box-sizing: border-box; margin: 0; padding: 0; }}
         body {{
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: linear-gradient(135deg, #1E3BB3 0%, #3157D5 50%, #6B7FEA 100%);
-            color: #ffffff;
-            margin: 0;
-            padding: 40px 20px;
+            background: #0B0F19;
+            color: #F1F5F9;
             display: flex;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            box-sizing: border-box;
+            padding: 30px 20px;
         }}
-        .card {{
-            background: rgba(255, 255, 255, 0.95);
-            color: #20263A;
-            border-radius: 28px;
-            padding: 45px 35px;
-            max-width: 520px;
+        .container {{
+            max-width: 540px;
             width: 100%;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+            background: #111827;
+            border: 1px solid #1F2937;
+            border-radius: 28px;
+            padding: 40px 32px;
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 40px rgba(59, 130, 246, 0.15);
             text-align: center;
         }}
-        .badge {{
-            display: inline-block;
-            background: rgba(49, 87, 213, 0.1);
-            color: #3157D5;
-            padding: 6px 14px;
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: 700;
+        .brand-badge {{
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(59, 130, 246, 0.15);
+            color: #60A5FA;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 6px 16px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.8px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
+        }}
+        .brand-badge span {{
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10B981;
+            box-shadow: 0 0 8px #10B981;
+            display: inline-block;
         }}
         h1 {{
-            margin: 0 0 10px;
-            font-size: 28px;
+            font-size: 32px;
             font-weight: 900;
             letter-spacing: -0.5px;
-        }}
-        p {{
-            color: #758096;
-            font-size: 14px;
-            line-height: 1.5;
-            margin: 0 0 30px;
-        }}
-        .btn {{
-            display: block;
-            width: 100%;
-            background: linear-gradient(135deg, #3157D5 0%, #486EE6 100%);
-            color: #ffffff;
-            padding: 16px 24px;
-            border-radius: 18px;
-            font-weight: 700;
-            font-size: 15px;
-            text-decoration: none;
-            box-shadow: 0 10px 25px rgba(49, 87, 213, 0.35);
-            transition: all 0.2s ease;
-            box-sizing: border-box;
-            margin-bottom: 14px;
-        }}
-        .btn:hover {{
-            transform: translateY(-2px);
-            box-shadow: 0 14px 30px rgba(49, 87, 213, 0.45);
-        }}
-        .steps {{
-            background: #F5F7FC;
-            border-radius: 18px;
-            padding: 18px;
-            margin-top: 25px;
-            text-align: left;
-            font-size: 13px;
-            color: #4A5568;
-        }}
-        .steps ol {{
-            margin: 0;
-            padding-left: 20px;
-        }}
-        .steps li {{
+            color: #FFFFFF;
             margin-bottom: 8px;
         }}
-        .steps li:last-child {{
-            margin-bottom: 0;
+        .subtitle {{
+            color: #94A3B8;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 30px;
+        }}
+        .ip-tag {{
+            color: #38BDF8;
+            font-family: monospace;
+            font-weight: 700;
+        }}
+        .download-actions {{
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 30px;
+        }}
+        .btn {{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 16px 24px;
+            border-radius: 18px;
+            font-weight: 800;
+            font-size: 15px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }}
+        .btn-primary {{
+            background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+            color: #FFFFFF;
+            border: 1px solid #3B82F6;
+        }}
+        .btn-primary:hover {{
+            background: linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(37, 99, 235, 0.4);
+        }}
+        .btn-secondary {{
+            background: #1F2937;
+            color: #E2E8F0;
+            border: 1px solid #374151;
+        }}
+        .btn-secondary:hover {{
+            background: #374151;
+            transform: translateY(-2px);
+            color: #FFFFFF;
+        }}
+        .guide-box {{
+            background: #0B0F19;
+            border: 1px solid #1F2937;
+            border-radius: 20px;
+            padding: 22px;
+            text-align: left;
+            font-size: 13px;
+            color: #94A3B8;
+        }}
+        .guide-box h4 {{
+            color: #F1F5F9;
+            font-size: 13px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }}
+        .guide-box ol {{
+            padding-left: 20px;
+        }}
+        .guide-box li {{
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }}
+        .guide-box li strong {{
+            color: #E2E8F0;
+        }}
+        .footer-note {{
+            margin-top: 24px;
+            font-size: 11px;
+            color: #64748B;
+            font-family: monospace;
         }}
     </style>
 </head>
 <body>
-    <div class="card">
-        <span class="badge">Direct Ethernet Broadcast</span>
-        <h1>Install LANShare</h1>
-        <p>Your connected peer computer ({ip}) is sharing the LANShare application with you over your local Ethernet cable.</p>
-        
-        <a href="/download/app" class="btn">⬇ Download LANShare Package (.zip)</a>
-        
-        <div class="steps">
-            <strong>Next steps on this computer:</strong>
+    <div class="container">
+        <div class="brand-badge">
+            <span></span> Direct Ethernet Link Ready
+        </div>
+        <h1>Get WireDrop</h1>
+        <p class="subtitle">
+            Host PC (<span class="ip-tag">{ip}</span>) is ready to stream the WireDrop application directly to this computer over the local Ethernet cable.
+        </p>
+
+        <div class="download-actions">
+            <a href="/download/exe" class="btn btn-primary">
+                ⬇ Download WireDrop Setup (.exe)
+            </a>
+            <a href="/download/zip" class="btn btn-secondary">
+                📦 Download Portable ZIP Package
+            </a>
+        </div>
+
+        <div class="guide-box">
+            <h4>⚡ Quick Setup Instructions</h4>
             <ol>
-                <li>Click <b>Download LANShare Package</b>.</li>
-                <li>Right-click the downloaded zip and choose <b>Extract All</b>.</li>
-                <li>Double click <b>LANShare.exe</b> to launch!</li>
-                <li>Both computers will automatically connect to transfer files at full speed.</li>
+                <li>Click <strong>Download WireDrop Setup</strong> above.</li>
+                <li>Run the downloaded installer on this computer.</li>
+                <li>Both computers will automatically link over the Ethernet cable at <strong>1000 Mbps</strong>. No internet required!</li>
             </ol>
+        </div>
+
+        <div class="footer-note">
+            Zero Cloud &bull; Direct Kernel Sockets &bull; Port 52522
         </div>
     </div>
 </body>
 </html>"""
     return HTMLResponse(content=html)
 
+@app.get("/download/exe")
+async def download_exe():
+    _, exe_path = get_bundle_paths()
+    if exe_path and os.path.exists(exe_path):
+        filename = os.path.basename(exe_path)
+        return FileResponse(
+            exe_path, 
+            media_type="application/vnd.microsoft.portable-executable", 
+            filename=filename,
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+        )
+    raise HTTPException(status_code=404, detail="WireDrop Setup executable not found on host machine.")
+
+@app.get("/download/zip")
+async def download_zip():
+    zip_path, _ = get_bundle_paths()
+    if zip_path and os.path.exists(zip_path):
+        filename = os.path.basename(zip_path)
+        return FileResponse(
+            zip_path, 
+            media_type="application/zip", 
+            filename=filename,
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+        )
+    raise HTTPException(status_code=404, detail="WireDrop ZIP package not found on host machine.")
+
 @app.get("/download/app")
 async def download_app_bundle():
     zip_path, exe_path = get_bundle_paths()
-    if zip_path and os.path.exists(zip_path):
-        return FileResponse(zip_path, media_type="application/zip", filename="LANShare-Windows-x64.zip")
-    elif exe_path and os.path.exists(exe_path):
-        return FileResponse(exe_path, media_type="application/octet-stream", filename="LANShare.exe")
-    raise HTTPException(status_code=404, detail="Installation package not found on host machine.")
+    if exe_path and os.path.exists(exe_path):
+        return await download_exe()
+    elif zip_path and os.path.exists(zip_path):
+        return await download_zip()
+    raise HTTPException(status_code=404, detail="No distribution package found on host machine.")
+
+@app.post("/api/system/fix-firewall")
+async def trigger_firewall_rule():
+    """
+    Invokes elevated PowerShell to configure Windows Defender Firewall for WireDrop.
+    """
+    try:
+        cmd = (
+            'Start-Process powershell -Verb RunAs -ArgumentList '
+            '\' -NoProfile -WindowStyle Hidden -Command '
+            '"netsh advfirewall firewall add rule name=\\"WireDrop Transfer TCP 52521\\" dir=in action=allow protocol=TCP localport=52521 profile=any; '
+            'netsh advfirewall firewall add rule name=\\"WireDrop Discovery UDP 52520\\" dir=in action=allow protocol=UDP localport=52520 profile=any; '
+            'netsh advfirewall firewall add rule name=\\"WireDrop Web Share TCP 52522\\" dir=in action=allow protocol=TCP localport=52522 profile=any" \''
+        )
+        import subprocess
+        subprocess.Popen(["powershell.exe", "-Command", cmd], shell=True)
+        return {"status": "triggered", "message": "Elevated firewall configuration launched."}
+    except Exception as e:
+        logger.error(f"Error launching firewall setup: {e}")
+        return {"status": "error", "message": str(e)}

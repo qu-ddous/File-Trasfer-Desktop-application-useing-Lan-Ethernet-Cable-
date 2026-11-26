@@ -240,7 +240,7 @@ export const SendFiles: React.FC<SendFilesProps> = ({ onNavigate }) => {
             {devices.length === 0 ? (
               <div className="text-center py-8 text-xs text-[#758096] bg-[#F5F7FC] rounded-2xl p-4 shadow-inner">
                 No LAN computers detected.<br />
-                Connect the Ethernet cable to another PC and launch LANShare.
+                Connect the Ethernet cable to another PC and launch WireDrop.
               </div>
             ) : (
               <div className="space-y-2.5">

@@ -123,6 +123,12 @@ export const api = {
   clearLogs: async () => {
     return safeFetch(`${API_BASE}/logs/clear`, { method: 'POST' }, { status: 'ok' });
   },
+  fixFirewall: async () => {
+    if ((window as any).electronAPI?.fixFirewall) {
+      return (window as any).electronAPI.fixFirewall();
+    }
+    return safeFetch(`${API_BASE}/system/fix-firewall`, { method: 'POST' }, { status: 'error' });
+  },
   testPing: async (ip: string, port = 52521) => {
     return safeFetch(`${API_BASE}/diagnostics/ping`, {
       method: 'POST',

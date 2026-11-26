@@ -8,6 +8,7 @@ export interface ElectronAPI {
   showNotification: (title: string, body: string) => Promise<void>;
   getAppMode: () => Promise<string>;
   toggleDevTools: () => Promise<void>;
+  fixFirewall: () => Promise<boolean>;
 }
 
 const api: ElectronAPI = {
@@ -17,7 +18,8 @@ const api: ElectronAPI = {
   getAppVersion: () => ipcRenderer.invoke('app:get-version'),
   showNotification: (title: string, body: string) => ipcRenderer.invoke('app:notification', { title, body }),
   getAppMode: () => ipcRenderer.invoke('app:get-mode'),
-  toggleDevTools: () => ipcRenderer.invoke('app:toggle-devtools')
+  toggleDevTools: () => ipcRenderer.invoke('app:toggle-devtools'),
+  fixFirewall: () => ipcRenderer.invoke('system:fix-firewall')
 };
 
 contextBridge.exposeInMainWorld('electronAPI', api);

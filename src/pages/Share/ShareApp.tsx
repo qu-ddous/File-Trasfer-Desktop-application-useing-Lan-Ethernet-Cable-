@@ -12,21 +12,30 @@ import {
   Wifi, 
   FileBox, 
   CheckCircle2, 
-  Info 
+  AlertTriangle,
+  Flame,
+  Terminal,
+  ShieldAlert
 } from 'lucide-react';
 import { api } from '../../services/api';
 import { useApp } from '../../context/AppContext';
+import { useToast } from '../../context/ToastContext';
 
 export const ShareApp: React.FC = () => {
   const { networkStatus } = useApp();
+  const { showToast } = useToast();
   const [shareInfo, setShareInfo] = useState({
     share_url: 'http://127.0.0.1:52522/download',
     has_zip: true,
     has_exe: true,
+    exe_name: 'WireDrop Setup 1.0.0.exe',
+    zip_name: 'WireDrop-Windows-x64.zip',
     ip: '127.0.0.1',
     port: 52522
   });
   const [copied, setCopied] = useState(false);
+  const [copiedCmd, setCopiedCmd] = useState(false);
+  const [isFixingFirewall, setIsFixingFirewall] = useState(false);
 
   useEffect(() => {
     api.getShareInfo().then((data) => {
@@ -39,7 +48,28 @@ export const ShareApp: React.FC = () => {
   const handleCopyLink = () => {
     navigator.clipboard.writeText(shareInfo.share_url);
     setCopied(true);
+    showToast('success', 'Download URL Copied!', `Open ${shareInfo.share_url} in Chrome/Edge on the second PC`, 3500);
     setTimeout(() => setCopied(false), 2500);
+  };
+
+  const handleFixFirewall = async () => {
+    setIsFixingFirewall(true);
+    try {
+      await api.fixFirewall();
+      showToast('success', 'Firewall Configured!', 'Windows Firewall rules for Port 52520, 52521, and 52522 added successfully.', 5000);
+    } catch (e) {
+      showToast('info', 'Firewall Rule Triggered', 'Please accept the Windows Administrator UAC prompt to allow incoming sockets.', 5000);
+    } finally {
+      setIsFixingFirewall(false);
+    }
+  };
+
+  const handleCopyFirewallCmd = () => {
+    const cmd = `netsh advfirewall firewall add rule name="WireDrop All" dir=in action=allow protocol=TCP localport=52520-52522 profile=any`;
+    navigator.clipboard.writeText(cmd);
+    setCopiedCmd(true);
+    showToast('info', 'Firewall Command Copied!', 'Run in Windows Command Prompt (cmd) as Administrator');
+    setTimeout(() => setCopiedCmd(false), 2500);
   };
 
   return (
@@ -49,10 +79,10 @@ export const ShareApp: React.FC = () => {
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2 max-w-xl">
             <h2 className="text-3xl font-black tracking-tight text-slate-900">
-              Share Application via Ethernet
+              Share WireDrop via Ethernet
             </h2>
             <p className="text-slate-600 text-sm font-medium leading-relaxed">
-              If the other computer does not have WireDrop installed yet, send it directly through the connected Ethernet cable using your built-in local web server.
+              If the second computer does not have WireDrop installed yet, send the installer directly through the connected Ethernet cable using your built-in local web server.
             </p>
           </div>
 
@@ -61,6 +91,44 @@ export const ShareApp: React.FC = () => {
               <span className="block text-2xl font-black text-sky-800">:52522</span>
               <span className="text-[11px] font-bold text-sky-600 uppercase">HTTP Port</span>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* FIREWALL FIX BANNER (Solves ERR_CONNECTION_TIMED_OUT) */}
+      <div className="rounded-3xl border border-amber-200 bg-gradient-to-r from-amber-50/90 to-orange-50/90 p-6 shadow-sm">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+          <div className="flex items-start gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-amber-500/15 border border-amber-300 text-amber-700 flex items-center justify-center shrink-0">
+              <ShieldAlert className="w-6 h-6" />
+            </div>
+            <div className="space-y-1">
+              <h4 className="font-extrabold text-sm text-amber-950 flex items-center gap-2">
+                Getting "Site Can't Be Reached (ERR_CONNECTION_TIMED_OUT)" on the other PC?
+              </h4>
+              <p className="text-xs text-amber-800/90 leading-relaxed max-w-2xl">
+                Windows Defender Firewall automatically blocks incoming Ethernet connections until you permit ports 52521 &amp; 52522. Click the 1-click button below to instantly allow WireDrop across all networks.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+            <button
+              onClick={handleFixFirewall}
+              disabled={isFixingFirewall}
+              className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-xs shadow-md shadow-amber-600/25 transition-all cursor-pointer"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              {isFixingFirewall ? 'Configuring...' : '1-Click Allow in Firewall'}
+            </button>
+
+            <button
+              onClick={handleCopyFirewallCmd}
+              className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-3 rounded-2xl bg-white border border-amber-200 text-amber-900 font-bold text-xs hover:bg-amber-50 transition-all cursor-pointer"
+            >
+              {copiedCmd ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Terminal className="w-3.5 h-3.5 text-amber-700" />}
+              {copiedCmd ? 'Command Copied' : 'Copy CMD Rule'}
+            </button>
           </div>
         </div>
       </div>
@@ -74,7 +142,7 @@ export const ShareApp: React.FC = () => {
             </div>
             <div>
               <h3 className="font-extrabold text-lg text-[#20263A]">Direct Browser Download Link</h3>
-              <p className="text-xs text-[#758096]">Open this link in any browser (Chrome, Edge) on the second computer</p>
+              <p className="text-xs text-[#758096]">Open this address in Chrome or Edge on the second computer</p>
             </div>
           </div>
 
@@ -118,6 +186,49 @@ export const ShareApp: React.FC = () => {
           </button>
         </div>
 
+        {/* Direct Download Options */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+          <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-100 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
+                EXE
+              </div>
+              <div>
+                <h5 className="font-extrabold text-xs text-slate-800">WireDrop Setup (Installer)</h5>
+                <p className="text-[11px] text-slate-500 font-mono">1-Click Windows Setup</p>
+              </div>
+            </div>
+            <a
+              href={`${shareInfo.share_url}/../download/exe`}
+              target="_blank"
+              rel="noreferrer"
+              className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 bg-white px-3 py-1.5 rounded-xl border border-blue-200 shadow-xs"
+            >
+              <Download className="w-3.5 h-3.5" /> Test Link
+            </a>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-100 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
+                ZIP
+              </div>
+              <div>
+                <h5 className="font-extrabold text-xs text-slate-800">Portable Archive (.zip)</h5>
+                <p className="text-[11px] text-slate-500 font-mono">Extract and run immediately</p>
+              </div>
+            </div>
+            <a
+              href={`${shareInfo.share_url}/../download/zip`}
+              target="_blank"
+              rel="noreferrer"
+              className="text-xs font-bold text-emerald-600 hover:text-emerald-800 flex items-center gap-1 bg-white px-3 py-1.5 rounded-xl border border-emerald-200 shadow-xs"
+            >
+              <Download className="w-3.5 h-3.5" /> Test Link
+            </a>
+          </div>
+        </div>
+
         {/* Step by step guide */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-2">
           <div className="p-5 rounded-2xl bg-gradient-to-br from-white to-[#F5F7FC] border border-[#E6EAF2] shadow-xs hover:shadow-md transition-all space-y-2">
@@ -126,7 +237,7 @@ export const ShareApp: React.FC = () => {
             </div>
             <h4 className="font-bold text-xs text-[#20263A]">Connect Cable</h4>
             <p className="text-[11px] text-[#758096] leading-relaxed">
-              Connect the Ethernet LAN cable directly between this PC and the other computer.
+              Connect the Ethernet LAN cable directly between this PC and the second computer.
             </p>
           </div>
 
@@ -147,7 +258,7 @@ export const ShareApp: React.FC = () => {
             </div>
             <h4 className="font-bold text-xs text-[#20263A]">Run & Connect</h4>
             <p className="text-[11px] text-[#758096] leading-relaxed">
-              Download and extract <span className="font-bold text-[#20263A]">LANShare.exe</span>. As soon as it launches, both devices auto-pair!
+              Run <span className="font-bold text-[#20263A]">WireDrop Setup</span> on the second PC. Both machines link automatically!
             </p>
           </div>
         </div>
@@ -158,8 +269,8 @@ export const ShareApp: React.FC = () => {
         <div className="flex items-center gap-3">
           <FileBox className="w-5 h-5 text-[#0284C7]" />
           <div>
-            <h4 className="font-bold text-xs text-[#20263A]">Host Package Available on this Machine</h4>
-            <p className="text-[11px] text-[#758096]">Bundled self-contained Windows x64 distribution file</p>
+            <h4 className="font-bold text-xs text-[#20263A]">Host Package Ready for Streaming</h4>
+            <p className="text-[11px] text-[#758096]">Bundled self-contained Windows x64 distribution available on port 52522</p>
           </div>
         </div>
 

@@ -105,6 +105,22 @@ function setupIPC() {
       mainWindow.webContents.toggleDevTools();
     }
   });
+
+  // 1-Click Windows Defender Firewall configuration
+  ipcMain.handle('system:fix-firewall', async () => {
+    return new Promise((resolve) => {
+      const psScript = "Start-Process powershell -Verb RunAs -ArgumentList '-NoProfile -Command \"netsh advfirewall firewall add rule name=\\\"WireDrop Transfer TCP 52521\\\" dir=in action=allow protocol=TCP localport=52521 profile=any; netsh advfirewall firewall add rule name=\\\"WireDrop Discovery UDP 52520\\\" dir=in action=allow protocol=UDP localport=52520 profile=any; netsh advfirewall firewall add rule name=\\\"WireDrop Web Share TCP 52522\\\" dir=in action=allow protocol=TCP localport=52522 profile=any\"'";
+      const { exec } = require('child_process');
+      exec(`powershell.exe -NoProfile -Command "${psScript}"`, (err: any) => {
+        if (err) {
+          console.error('[Main] Failed to configure firewall:', err);
+          resolve(false);
+        } else {
+          resolve(true);
+        }
+      });
+    });
+  });
 }
 
 // App lifecycle
