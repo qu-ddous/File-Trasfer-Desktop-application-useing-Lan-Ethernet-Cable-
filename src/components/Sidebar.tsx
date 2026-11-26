@@ -22,11 +22,12 @@ interface SidebarProps {
   currentTab: string;
   setTab: (tab: string) => void;
   isOnline: boolean;
+  onlinePeersCount?: number;
   activeCount: number;
   appMode?: 'server' | 'client' | 'full';
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setTab, isOnline, activeCount }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setTab, isOnline, onlinePeersCount = 0, activeCount }) => {
   const { showToast } = useToast();
   const [fixingFirewall, setFixingFirewall] = useState(false);
 
@@ -112,21 +113,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setTab, isOnline, 
       <div className="p-4 border-t border-[#E6EAF2] bg-[#F5F7FC]/60">
         <div className="flex items-center gap-3 px-3.5 py-2.5 rounded-2xl bg-white border border-[#E6EAF2] shadow-xs">
           <div className="relative flex items-center justify-center">
-            {isOnline ? (
+            {onlinePeersCount > 0 ? (
               <>
                 <div className="w-2.5 h-2.5 rounded-full bg-[#22A06B]" />
                 <div className="absolute w-4 h-4 rounded-full bg-[#22A06B]/30 animate-ping" />
               </>
+            ) : isOnline ? (
+              <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
             ) : (
               <div className="w-2.5 h-2.5 rounded-full bg-[#E05252]" />
             )}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-bold text-[#20263A] truncate">
-              {isOnline ? 'Ethernet Active' : 'No LAN Connection'}
+              {onlinePeersCount > 0 ? 'Peer Connected' : isOnline ? 'Cable Ready (No Peer)' : 'Cable Unplugged'}
             </p>
             <p className="text-[10px] text-[#758096] font-medium truncate">
-              {isOnline ? 'Sockets 52520 / 52521' : 'Check Ethernet cable'}
+              {onlinePeersCount > 0 ? `${onlinePeersCount} PC online` : isOnline ? 'Waiting for other PC' : 'Check Ethernet cable'}
             </p>
           </div>
         </div>

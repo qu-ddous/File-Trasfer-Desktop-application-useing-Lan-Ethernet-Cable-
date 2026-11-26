@@ -181,10 +181,10 @@ export const ReceiveFiles: React.FC = () => {
               <p className="text-xs font-mono font-bold text-slate-800 mt-1 truncate">Downloads/WireDrop</p>
             </div>
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Auto-Accept Mode</span>
-              <p className="text-xs font-bold text-emerald-600 mt-1 flex items-center gap-1.5">
-                <Check className="w-3.5 h-3.5" />
-                <span>Active (Direct LAN)</span>
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Approval Mode</span>
+              <p className="text-xs font-bold text-blue-600 mt-1 flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>Popup Prompt (Receive / Reject)</span>
               </p>
             </div>
           </div>

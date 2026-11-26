@@ -46,8 +46,9 @@ export const TransferHistory: React.FC = () => {
   };
 
   const filtered = history.filter((h) => 
-    h.peer_device_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    h.status.toLowerCase().includes(searchTerm.toLowerCase())
+    h.status !== 'rejected' &&
+    (h.peer_device_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    h.status.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   return (
@@ -60,7 +61,7 @@ export const TransferHistory: React.FC = () => {
               Transfer Logs & History
             </h2>
             <p className="text-slate-600 text-sm font-medium leading-relaxed">
-              Permanent record of all completed, received, and cancelled transfers stored locally on your machine.
+              Permanent record of all completed file transfers stored locally on your machine.
             </p>
           </div>
 

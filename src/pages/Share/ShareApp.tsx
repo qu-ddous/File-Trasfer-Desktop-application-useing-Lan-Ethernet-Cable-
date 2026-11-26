@@ -3,9 +3,7 @@ import {
   Share2, 
   Copy, 
   Check, 
-  Download, 
   Monitor, 
-  ExternalLink, 
   Sparkles, 
   Zap, 
   ShieldCheck, 
@@ -184,49 +182,6 @@ export const ShareApp: React.FC = () => {
               </>
             )}
           </button>
-        </div>
-
-        {/* Direct Download Options */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-          <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-100 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
-                EXE
-              </div>
-              <div>
-                <h5 className="font-extrabold text-xs text-slate-800">WireDrop Setup (Installer)</h5>
-                <p className="text-[11px] text-slate-500 font-mono">1-Click Windows Setup</p>
-              </div>
-            </div>
-            <a
-              href={`${shareInfo.share_url}/../download/exe`}
-              target="_blank"
-              rel="noreferrer"
-              className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 bg-white px-3 py-1.5 rounded-xl border border-blue-200 shadow-xs"
-            >
-              <Download className="w-3.5 h-3.5" /> Test Link
-            </a>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-100 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
-                ZIP
-              </div>
-              <div>
-                <h5 className="font-extrabold text-xs text-slate-800">Portable Archive (.zip)</h5>
-                <p className="text-[11px] text-slate-500 font-mono">Extract and run immediately</p>
-              </div>
-            </div>
-            <a
-              href={`${shareInfo.share_url}/../download/zip`}
-              target="_blank"
-              rel="noreferrer"
-              className="text-xs font-bold text-emerald-600 hover:text-emerald-800 flex items-center gap-1 bg-white px-3 py-1.5 rounded-xl border border-emerald-200 shadow-xs"
-            >
-              <Download className="w-3.5 h-3.5" /> Test Link
-            </a>
-          </div>
         </div>
 
         {/* Step by step guide */}

@@ -23,7 +23,7 @@ class AppSettings(BaseModel):
     download_path: str = DEFAULT_DOWNLOAD_DIR
     discovery_port: int = DEFAULT_DISCOVERY_PORT
     transfer_port: int = DEFAULT_TRANSFER_PORT
-    auto_accept_trusted: bool = True
+    auto_accept_trusted: bool = False
     auto_accept_all: bool = False
     max_concurrent_transfers: int = 3
     chunk_size: int = DEFAULT_CHUNK_SIZE

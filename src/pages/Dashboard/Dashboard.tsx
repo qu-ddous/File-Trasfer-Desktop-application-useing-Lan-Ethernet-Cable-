@@ -24,7 +24,8 @@ interface DashboardProps {
 export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const { networkStatus, devices, activeTransfers } = useApp();
   const activeTransfer = activeTransfers.length > 0 ? activeTransfers[0] : null;
-  const activePeer = devices.length > 0 ? devices[0] : null;
+  const onlinePeers = devices.filter(d => d.is_online);
+  const isPeerConnected = onlinePeers.length > 0;
 
   return (
     <div className="space-y-6 pb-8">
@@ -69,26 +70,44 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
 
       {/* Colorful Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Network Status */}
+        {/* Card 1: Real-Time Connection Status */}
         <div className="relative overflow-hidden bg-white rounded-3xl p-5 border border-[#E6EAF2] shadow-sm hover:shadow-md transition-all group">
           <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110" />
           <div className="relative z-10">
             <div className="flex items-center justify-between text-[#758096] mb-3">
-              <span className="text-[11px] font-bold uppercase tracking-wider">Network Link</span>
+              <span className="text-[11px] font-bold uppercase tracking-wider">Peer Connection</span>
               <div className="w-8 h-8 rounded-xl bg-blue-100/70 flex items-center justify-center text-[#3157D5]">
                 <Network className="w-4 h-4" />
               </div>
             </div>
             <div className="flex items-baseline gap-2">
-              <span className={`text-2xl font-black ${networkStatus?.is_connected ? 'text-[#20263A]' : 'text-[#E05252]'}`}>
-                {networkStatus?.is_connected ? 'Connected' : 'Offline'}
+              <span className={`text-2xl font-black ${
+                isPeerConnected
+                  ? 'text-[#22A06B]'
+                  : networkStatus?.is_connected
+                  ? 'text-amber-600'
+                  : 'text-[#E05252]'
+              }`}>
+                {isPeerConnected ? 'Connected' : networkStatus?.is_connected ? 'No Peer' : 'Offline'}
               </span>
               {networkStatus?.is_ethernet && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#22A06B]/15 text-[#22A06B] font-bold">Ethernet</span>
+                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                  isPeerConnected
+                    ? 'bg-[#22A06B]/15 text-[#22A06B]'
+                    : networkStatus?.is_connected
+                    ? 'bg-amber-100 text-amber-700'
+                    : 'bg-rose-100 text-rose-700'
+                }`}>
+                  {isPeerConnected ? 'Ethernet' : networkStatus?.is_connected ? 'Cable Ready' : 'Unplugged'}
+                </span>
               )}
             </div>
             <p className="text-xs font-semibold text-[#758096] mt-2 truncate">
-              IP: <span className="font-mono text-[#20263A]">{networkStatus?.local_ip || '127.0.0.1'}</span>
+              {isPeerConnected
+                ? `Linked: ${onlinePeers[0].device_name}`
+                : networkStatus?.is_connected
+                ? `Waiting (${networkStatus?.local_ip || '127.0.0.1'})`
+                : 'Connect Ethernet cable'}
             </p>
           </div>
         </div>
@@ -104,10 +123,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
               </div>
             </div>
             <div className="text-2xl font-black text-[#20263A]">
-              {devices.filter(d => d.is_online).length}
+              {onlinePeers.length}
             </div>
-            <p className="text-xs font-semibold text-[#758096] mt-2">
-              {devices.length} known in cache
+            <p className="text-xs font-semibold text-[#758096] mt-2 truncate">
+              {onlinePeers.length > 0
+                ? `${onlinePeers.length} online & ready`
+                : devices.length > 0
+                ? `${devices.length} saved (offline)`
+                : 'No peers detected'}
             </p>
           </div>
         </div>
@@ -125,27 +148,37 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             <div className="text-2xl font-black text-[#20263A]">
               {activeTransfers.length}
             </div>
-            <p className="text-xs font-semibold text-[#758096] mt-2">
-              {activeTransfers.length > 0 ? 'Transferring at wire speed' : 'Sockets listening'}
+            <p className="text-xs font-semibold text-[#758096] mt-2 truncate">
+              {activeTransfers.length > 0
+                ? `Streaming ${activeTransfer?.items_count || 1} item(s) (${activeTransfer?.peer_name || 'peer'})`
+                : isPeerConnected
+                ? 'Ready to transfer'
+                : 'Idle — waiting for peer'}
             </p>
           </div>
         </div>
 
-        {/* Card 4: Integrity Engine */}
+        {/* Card 4: Real-Time Link Speed */}
         <div className="relative overflow-hidden bg-white rounded-3xl p-5 border border-[#E6EAF2] shadow-sm hover:shadow-md transition-all group">
           <div className="absolute top-0 right-0 w-24 h-24 bg-amber-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110" />
           <div className="relative z-10">
             <div className="flex items-center justify-between text-[#758096] mb-3">
-              <span className="text-[11px] font-bold uppercase tracking-wider">Data Shield</span>
+              <span className="text-[11px] font-bold uppercase tracking-wider">Link Speed</span>
               <div className="w-8 h-8 rounded-xl bg-amber-100/70 flex items-center justify-center text-[#E6A23C]">
-                <ShieldCheck className="w-4 h-4" />
+                <Zap className="w-4 h-4" />
               </div>
             </div>
             <div className="text-2xl font-black text-[#20263A]">
-              SHA-256
+              {networkStatus?.is_connected
+                ? `${networkStatus?.speed_mbps || 1000} Mbps`
+                : '0 Mbps'}
             </div>
-            <p className="text-xs font-semibold text-[#758096] mt-2">
-              Hardware verification active
+            <p className="text-xs font-semibold text-[#758096] mt-2 truncate">
+              {activeTransfer
+                ? 'Live transfer rate'
+                : isPeerConnected
+                ? 'Ethernet link active'
+                : 'No active peer link'}
             </p>
           </div>
         </div>

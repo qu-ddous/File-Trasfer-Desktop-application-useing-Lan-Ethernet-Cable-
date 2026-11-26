@@ -23,7 +23,8 @@ const getInitialTab = () => {
 
 const AppContent: React.FC = () => {
   const [currentTab, setCurrentTab] = useState(getInitialTab);
-  const { networkStatus, activeTransfers } = useApp();
+  const { networkStatus, activeTransfers, devices } = useApp();
+  const onlinePeersCount = devices.filter(d => d.is_online).length;
 
   return (
     <div className="flex h-screen bg-[#F8FAFC] text-[#0F172A] relative">
@@ -32,6 +33,7 @@ const AppContent: React.FC = () => {
         currentTab={currentTab}
         setTab={setCurrentTab}
         isOnline={networkStatus?.is_connected ?? false}
+        onlinePeersCount={onlinePeersCount}
         activeCount={activeTransfers.length}
       />
       <main className="flex-1 overflow-y-auto p-8">

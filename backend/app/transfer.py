@@ -136,9 +136,9 @@ class TransferEngine:
             session.save_path = save_path
             self.active_transfers[transfer_id] = session
 
-            # Check if auto-accept is enabled
-            auto_accept = getattr(settings, "auto_accept_all", True)
-            if not auto_accept:
+            # Check if auto-accept is enabled (default False so receiver always gets popup prompt)
+            auto_accept = getattr(settings, "auto_accept_all", False)
+            if not auto_accept and getattr(settings, "auto_accept_trusted", False):
                 from app.database import get_devices
                 saved_devices = get_devices()
                 is_trusted = any(
@@ -146,7 +146,7 @@ class TransferEngine:
                     and d.get("paired_status") in ("trusted", "paired")
                     for d in saved_devices
                 )
-                if is_trusted and getattr(settings, "auto_accept_trusted", True):
+                if is_trusted:
                     auto_accept = True
 
             if not auto_accept:
