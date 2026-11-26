@@ -154,18 +154,27 @@ class DiscoveryEngine:
                     "timestamp": time.time()
                 }).encode("utf-8")
 
-                # Broadcast on 255.255.255.255 and adapter subnets
-                destinations = ["255.255.255.255"]
+                # Broadcast on active connected adapter subnets
+                destinations = []
                 for iface in get_network_interfaces():
-                    if iface["is_up"] and iface["broadcast"]:
+                    if iface["is_up"] and iface.get("broadcast") and iface["broadcast"] != "255.255.255.255":
                         destinations.append(iface["broadcast"])
+                    ip_str = iface.get("ip_address", "")
+                    if iface["is_up"] and ip_str and not ip_str.startswith("127.") and not "Unplugged" in ip_str:
+                        parts = ip_str.split(".")
+                        if len(parts) == 4:
+                            destinations.append(f"{parts[0]}.{parts[1]}.{parts[2]}.255")
+
+                # Fallback to global broadcast only if no specific subnet found
+                if not destinations:
+                    destinations.append("255.255.255.255")
 
                 # Unicast directly to all saved device IPs from the database
                 try:
                     saved_devices = get_devices()
                     for d in saved_devices:
                         target_ip = d.get("last_known_ip")
-                        if target_ip and target_ip not in ("127.0.0.1", "0.0.0.0"):
+                        if target_ip and target_ip not in ("127.0.0.1", "0.0.0.0") and "Unplugged" not in target_ip:
                             destinations.append(target_ip)
                 except Exception:
                     pass
@@ -173,10 +182,11 @@ class DiscoveryEngine:
                 for target in set(destinations):
                     try:
                         self._transport.sendto(msg, (target, self.discovery_port))
-                    except Exception:
+                    except (OSError, socket.error):
+                        # Silently ignore unrouted interface / unreachable host errors
                         pass
             except Exception as e:
-                logger.error(f"Error in beacon loop: {e}")
+                logger.debug(f"Error in beacon loop: {e}")
 
             await asyncio.sleep(3.0)
 

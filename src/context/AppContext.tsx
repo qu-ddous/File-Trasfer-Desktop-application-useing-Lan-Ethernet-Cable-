@@ -78,50 +78,110 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     refreshTransfers();
     refreshLogs();
 
-    // Poll every 3 seconds for fallback
+    // Check for pending incoming transfer requests via REST polling fallback
+    const checkPendingRequests = async () => {
+      try {
+        const res = await api.getPendingRequests();
+        if (res && res.pending && res.pending.length > 0) {
+          const req = res.pending[0];
+          setIncomingRequest((prev) => {
+            if (!prev || prev.transfer_id !== req.transfer_id) {
+              if ((window as any).electronAPI?.showNotification) {
+                (window as any).electronAPI.showNotification(
+                  'Incoming File Transfer',
+                  `${req.sender_name} wants to send ${req.total_items} item(s)`
+                );
+              }
+              return req;
+            }
+            return prev;
+          });
+        }
+      } catch (e) {
+        // quiet fallback
+      }
+    };
+
+    // Poll every 2.5 seconds for rock-solid sync
     const interval = setInterval(() => {
       refreshNetwork();
       refreshDevices();
       refreshTransfers();
-    }, 3000);
+      checkPendingRequests();
+    }, 2500);
 
-    // Setup live WebSocket
+    // Setup self-healing auto-reconnecting WebSocket
     let ws: WebSocket | null = null;
-    try {
-      ws = new WebSocket('ws://127.0.0.1:52522/ws');
-      ws.onmessage = (event) => {
-        try {
-          const msg = JSON.parse(event.data);
-          if (msg.event === 'incoming_transfer_request') {
-            setIncomingRequest(msg.data);
-            // Native notification if in desktop electron
-            if ((window as any).electronAPI?.showNotification) {
-              (window as any).electronAPI.showNotification(
-                'Incoming File Transfer',
-                `${msg.data.sender_name} wants to send ${msg.data.total_items} item(s)`
-              );
-            }
-          } else if (msg.event === 'incoming_transfer_started' || msg.event === 'transfer_started' || msg.event === 'transfer_progress' || msg.event === 'transfer_completed') {
-            refreshTransfers();
-            if (msg.event === 'incoming_transfer_started') {
+    let reconnectTimeout: any = null;
+    let isUnmounted = false;
+
+    const connectWS = () => {
+      if (isUnmounted) return;
+      try {
+        ws = new WebSocket('ws://127.0.0.1:52522/ws');
+
+        ws.onopen = () => {
+          // Connected cleanly
+        };
+
+        ws.onmessage = (event) => {
+          try {
+            const msg = JSON.parse(event.data);
+            if (msg.event === 'incoming_transfer_request') {
+              setIncomingRequest(msg.data);
+              if ((window as any).electronAPI?.showNotification) {
+                (window as any).electronAPI.showNotification(
+                  'Incoming File Transfer',
+                  `${msg.data.sender_name} wants to send ${msg.data.total_items} item(s)`
+                );
+              }
+            } else if (
+              msg.event === 'incoming_transfer_started' || 
+              msg.event === 'transfer_started' || 
+              msg.event === 'transfer_progress' || 
+              msg.event === 'transfer_completed'
+            ) {
+              refreshTransfers();
+              if (msg.event === 'incoming_transfer_started' || msg.event === 'transfer_completed') {
+                setIncomingRequest(null);
+              }
+            } else if (msg.event === 'transfer_rejected') {
               setIncomingRequest(null);
+              refreshTransfers();
+            } else if (msg.event === 'device_discovered' || msg.event === 'device_lost') {
+              refreshDevices();
+              refreshNetwork();
+            } else if (msg.event === 'log') {
+              setLogs((prev) => [...prev.slice(-499), msg.data]);
             }
-          } else if (msg.event === 'device_discovered' || msg.event === 'device_lost') {
-            refreshDevices();
-            refreshNetwork();
-          } else if (msg.event === 'log') {
-            setLogs((prev) => [...prev.slice(-499), msg.data]);
+          } catch (err) {
+            console.error('Error parsing WS message', err);
           }
-        } catch (err) {
-          console.error('Error parsing WS message', err);
+        };
+
+        ws.onclose = () => {
+          if (!isUnmounted) {
+            reconnectTimeout = setTimeout(connectWS, 2000);
+          }
+        };
+
+        ws.onerror = () => {
+          if (ws) ws.close();
+        };
+      } catch (err) {
+        if (!isUnmounted) {
+          reconnectTimeout = setTimeout(connectWS, 2500);
         }
-      };
-    } catch (err) {
-      console.warn('WS not reachable yet');
-    }
+      }
+    };
+
+    connectWS();
+    checkPendingRequests();
 
     return () => {
+      isUnmounted = true;
       clearInterval(interval);
+      if (reconnectTimeout) clearTimeout(reconnectTimeout);
       if (ws) ws.close();
     };
   }, []);

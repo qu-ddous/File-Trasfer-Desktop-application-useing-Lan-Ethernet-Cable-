@@ -80,6 +80,9 @@ export const api = {
   getActiveTransfers: async () => {
     return safeFetch(`${API_BASE}/transfers`, undefined, { active: [] });
   },
+  getPendingRequests: async () => {
+    return safeFetch(`${API_BASE}/transfers/incoming`, undefined, { pending: [] });
+  },
   getTransferDetails: async (transferId: string) => {
     return safeFetch(`${API_BASE}/transfers/${transferId}`, undefined, null);
   },

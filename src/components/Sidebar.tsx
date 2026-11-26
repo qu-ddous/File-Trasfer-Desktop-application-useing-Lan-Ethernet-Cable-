@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   LayoutDashboard, 
   Send, 
@@ -11,8 +11,12 @@ import {
   Sparkles, 
   Zap,
   Share2,
-  Terminal
+  Terminal,
+  ShieldCheck,
+  ShieldAlert
 } from 'lucide-react';
+import { api } from '../services/api';
+import { useToast } from '../context/ToastContext';
 
 interface SidebarProps {
   currentTab: string;
@@ -23,6 +27,20 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setTab, isOnline, activeCount }) => {
+  const { showToast } = useToast();
+  const [fixingFirewall, setFixingFirewall] = useState(false);
+
+  const handleFixFirewall = async () => {
+    setFixingFirewall(true);
+    try {
+      await api.fixFirewall();
+      showToast('success', 'Windows Firewall Allowed', 'Ports 52520, 52521, and 52522 are allowed in Windows Defender Firewall.');
+    } catch (e) {
+      showToast('info', 'Firewall Script Started', 'Accept the Windows Administrator UAC prompt to allow sockets.');
+    } finally {
+      setTimeout(() => setFixingFirewall(false), 2000);
+    }
+  };
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'send', label: 'Send Files', icon: Send },
@@ -112,6 +130,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setTab, isOnline, 
             </p>
           </div>
         </div>
+
+        <button
+          onClick={handleFixFirewall}
+          disabled={fixingFirewall}
+          className="mt-2.5 w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 text-[11px] font-extrabold shadow-2xs transition-all cursor-pointer"
+          title="Allow WireDrop in Windows Defender Firewall"
+        >
+          {fixingFirewall ? (
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 animate-spin" />
+          ) : (
+            <ShieldAlert className="w-3.5 h-3.5 text-amber-700" />
+          )}
+          <span>{fixingFirewall ? 'Configuring Firewall...' : 'Fix Windows Firewall'}</span>
+        </button>
       </div>
     </aside>
   );

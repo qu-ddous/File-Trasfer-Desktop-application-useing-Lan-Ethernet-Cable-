@@ -52,6 +52,7 @@ class TransferEngine:
         self.server = None
         self.active_transfers: Dict[str, TransferSession] = {}
         self.incoming_requests: Dict[str, asyncio.Event] = {} # transfer_id -> acceptance event
+        self.pending_requests_data: Dict[str, Dict[str, Any]] = {} # transfer_id -> modal payload
         self.request_decisions: Dict[str, bool] = {}          # transfer_id -> accepted/rejected
         self.custom_save_paths: Dict[str, str] = {}           # transfer_id -> chosen folder
 
@@ -152,8 +153,7 @@ class TransferEngine:
                 # Notify UI about incoming request
                 event_obj = asyncio.Event()
                 self.incoming_requests[transfer_id] = event_obj
-
-                await self._emit_event("incoming_transfer_request", {
+                req_payload = {
                     "transfer_id": transfer_id,
                     "sender_id": sender_id,
                     "sender_name": sender_name,
@@ -161,15 +161,20 @@ class TransferEngine:
                     "total_items": total_items,
                     "total_bytes": total_bytes,
                     "items": items,
-                    "default_save_path": save_path
-                })
+                    "default_save_path": save_path,
+                    "timestamp": time.time()
+                }
+                self.pending_requests_data[transfer_id] = req_payload
 
-                # Wait for user decision (max 60 seconds timeout)
+                await self._emit_event("incoming_transfer_request", req_payload)
+
+                # Wait for user decision (max 120 seconds timeout)
                 try:
-                    await asyncio.wait_for(event_obj.wait(), timeout=60.0)
+                    await asyncio.wait_for(event_obj.wait(), timeout=120.0)
                 except asyncio.TimeoutError:
                     self.request_decisions[transfer_id] = False
 
+                self.pending_requests_data.pop(transfer_id, None)
                 accepted = self.request_decisions.get(transfer_id, False)
                 if transfer_id in self.custom_save_paths:
                     save_path = self.custom_save_paths[transfer_id]
@@ -310,6 +315,8 @@ class TransferEngine:
                 del self.active_transfers[transfer_id]
             if transfer_id and transfer_id in self.incoming_requests:
                 del self.incoming_requests[transfer_id]
+            if transfer_id and transfer_id in self.pending_requests_data:
+                del self.pending_requests_data[transfer_id]
             writer.close()
             try:
                 await writer.wait_closed()
@@ -415,13 +422,20 @@ class TransferEngine:
         reader, writer = None, None
         try:
             logger.info(f"Connecting to peer {peer_ip}:{peer_port} for transfer {transfer_id}...")
-            try:
-                connect_coro = asyncio.open_connection(peer_ip, peer_port)
-                reader, writer = await asyncio.wait_for(connect_coro, timeout=6.0)
-            except asyncio.TimeoutError:
-                raise ConnectionError(f"Connection to peer {peer_ip}:{peer_port} timed out after 6s. Ensure WireDrop is open on the target PC and Windows Firewall allows incoming sockets on port {peer_port}.")
-            except Exception as ce:
-                raise ConnectionError(f"Could not connect to {peer_ip}:{peer_port} ({ce}). Please check Ethernet cable link and verify the IP address.")
+            last_err = None
+            for attempt in range(1, 4):
+                try:
+                    connect_coro = asyncio.open_connection(peer_ip, peer_port)
+                    reader, writer = await asyncio.wait_for(connect_coro, timeout=8.0)
+                    break
+                except (asyncio.TimeoutError, OSError) as ce:
+                    last_err = ce
+                    logger.warning(f"Connection attempt {attempt}/3 to {peer_ip}:{peer_port} failed: {ce}")
+                    if attempt < 3:
+                        await asyncio.sleep(0.8)
+
+            if not reader or not writer:
+                raise ConnectionError(f"Connection to peer {peer_ip}:{peer_port} timed out after 3 attempts ({last_err}). Ensure WireDrop is open on target PC and Windows Firewall allows port {peer_port}.")
 
             # 1. Send TRANSFER_REQUEST
             req_msg = {
@@ -444,8 +458,12 @@ class TransferEngine:
             writer.write(encode_message(req_msg))
             await writer.drain()
 
-            # 2. Wait for receiver decision
-            res = await read_message(reader)
+            # 2. Wait for receiver decision (allow up to 120s for user acceptance)
+            try:
+                res = await asyncio.wait_for(read_message(reader), timeout=120.0)
+            except asyncio.TimeoutError:
+                raise ConnectionError("Receiver did not respond to transfer request within 120 seconds.")
+
             if res.get("status") != "accepted":
                 session.status = "rejected"
                 update_transfer_status(transfer_id, "rejected", error=res.get("message", "Receiver rejected"))
@@ -544,6 +562,7 @@ class TransferEngine:
 
     def accept_transfer(self, transfer_id: str, save_path: Optional[str] = None):
         """Called by FastAPI when user clicks Accept in Receive Files screen."""
+        self.pending_requests_data.pop(transfer_id, None)
         if save_path:
             self.custom_save_paths[transfer_id] = save_path
         self.request_decisions[transfer_id] = True
@@ -552,6 +571,7 @@ class TransferEngine:
 
     def reject_transfer(self, transfer_id: str):
         """Called by FastAPI when user clicks Reject."""
+        self.pending_requests_data.pop(transfer_id, None)
         self.request_decisions[transfer_id] = False
         if transfer_id in self.incoming_requests:
             self.incoming_requests[transfer_id].set()

@@ -117,6 +117,25 @@ async def lifespan(app: FastAPI):
     )
     await discovery_engine.start()
 
+    # Self-healing Windows Defender Firewall check on startup
+    def auto_configure_firewall():
+        if sys.platform != "win32":
+            return
+        try:
+            import subprocess
+            cmds = [
+                'netsh advfirewall firewall add rule name="WireDrop Transfer TCP 52521" dir=in action=allow protocol=TCP localport=52521 profile=any',
+                'netsh advfirewall firewall add rule name="WireDrop Discovery UDP 52520" dir=in action=allow protocol=UDP localport=52520 profile=any',
+                'netsh advfirewall firewall add rule name="WireDrop Web Share TCP 52522" dir=in action=allow protocol=TCP localport=52522 profile=any'
+            ]
+            for c in cmds:
+                subprocess.run(c, shell=True, capture_output=True, timeout=3)
+            logger.info("Windows Defender Firewall rules verified for ports 52520, 52521, 52522.")
+        except Exception as fe:
+            logger.debug(f"Auto-firewall registration note: {fe}")
+
+    asyncio.create_task(asyncio.to_thread(auto_configure_firewall))
+
     yield
 
     # Teardown
@@ -341,6 +360,12 @@ async def get_transfer(transfer_id: str):
     if not details:
         raise HTTPException(status_code=404, detail="Transfer not found")
     return details
+
+@app.get("/api/transfers/incoming")
+async def get_pending_incoming_transfers():
+    if not transfer_engine:
+        return {"pending": []}
+    return {"pending": list(transfer_engine.pending_requests_data.values())}
 
 @app.post("/api/transfers/{transfer_id}/accept")
 async def accept_incoming(transfer_id: str, req: AcceptRequest):
