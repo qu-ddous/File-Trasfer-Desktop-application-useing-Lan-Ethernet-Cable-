@@ -17,8 +17,6 @@ import {
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
-import { NetworkDataFlow } from '../../components/NetworkDataFlow';
-
 interface DashboardProps {
   onNavigate: (tab: string) => void;
 }
@@ -207,17 +205,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           </div>
         )}
       </div>
-
-      {/* Pro Visual Hardware Data Flow Pipeline (Positioned at bottom) */}
-      <NetworkDataFlow
-        mode="dashboard"
-        localIp={networkStatus?.local_ip}
-        peerDeviceName={activeTransfer?.peer_name || activePeer?.device_name}
-        peerIp={activePeer?.last_known_ip}
-        isStreaming={Boolean(activeTransfer && activeTransfer.status === 'transferring')}
-        transferredBytes={activeTransfer?.transferred_bytes || 0}
-        totalBytes={activeTransfer?.total_bytes || 0}
-      />
     </div>
   );
 };

@@ -18,7 +18,6 @@ import {
 import { useApp } from '../../context/AppContext';
 import { api } from '../../services/api';
 import { formatBytes } from '../../utils/formatters';
-import { NetworkDataFlow } from '../../components/NetworkDataFlow';
 import { useToast } from '../../context/ToastContext';
 
 interface SendFilesProps {
@@ -285,16 +284,6 @@ export const SendFiles: React.FC<SendFilesProps> = ({ onNavigate }) => {
           </div>
         </div>
       </div>
-
-      {/* Pro Visual Hardware Data Flow Pipeline (Positioned at bottom) */}
-      <NetworkDataFlow
-        mode="send"
-        localIp={networkStatus?.local_ip}
-        peerDeviceName={selectedPeer?.device_name}
-        peerIp={selectedPeer?.last_known_ip}
-        isStreaming={isSending}
-        stagedFilesCount={selectedPaths.length}
-      />
     </div>
   );
 };

@@ -15,7 +15,6 @@ import {
 import { useApp } from '../../context/AppContext';
 import { api } from '../../services/api';
 import { formatBytes } from '../../utils/formatters';
-import { NetworkDataFlow } from '../../components/NetworkDataFlow';
 import { useToast } from '../../context/ToastContext';
 
 export const ReceiveFiles: React.FC = () => {
@@ -191,17 +190,6 @@ export const ReceiveFiles: React.FC = () => {
           </div>
         </div>
       )}
-
-      {/* Pro Visual Hardware Data Flow Pipeline (Positioned at bottom) */}
-      <NetworkDataFlow
-        mode="receive"
-        localIp={networkStatus?.local_ip}
-        peerDeviceName={incomingRequest?.sender_name || receivingTransfer?.peer_name}
-        peerIp={incomingRequest?.peer_ip}
-        isStreaming={Boolean(receivingTransfer)}
-        transferredBytes={receivingTransfer?.transferred_bytes || 0}
-        totalBytes={incomingRequest?.total_bytes || receivingTransfer?.total_bytes || 0}
-      />
     </div>
   );
 };
