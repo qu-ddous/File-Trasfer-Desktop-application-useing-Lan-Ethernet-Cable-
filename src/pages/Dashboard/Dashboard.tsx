@@ -69,17 +69,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         </div>
       </div>
 
-      {/* Visual Graphical Node-to-Node Data Flow Pipeline */}
-      <NetworkDataFlow
-        mode="dashboard"
-        localIp={networkStatus?.local_ip}
-        peerDeviceName={activeTransfer?.peer_name || activePeer?.device_name}
-        peerIp={activePeer?.last_known_ip}
-        isStreaming={Boolean(activeTransfer && activeTransfer.status === 'transferring')}
-        transferredBytes={activeTransfer?.transferred_bytes || 0}
-        totalBytes={activeTransfer?.total_bytes || 0}
-      />
-
       {/* Colorful Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Network Status */}
@@ -218,6 +207,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           </div>
         )}
       </div>
+
+      {/* Pro Visual Hardware Data Flow Pipeline (Positioned at bottom) */}
+      <NetworkDataFlow
+        mode="dashboard"
+        localIp={networkStatus?.local_ip}
+        peerDeviceName={activeTransfer?.peer_name || activePeer?.device_name}
+        peerIp={activePeer?.last_known_ip}
+        isStreaming={Boolean(activeTransfer && activeTransfer.status === 'transferring')}
+        transferredBytes={activeTransfer?.transferred_bytes || 0}
+        totalBytes={activeTransfer?.total_bytes || 0}
+      />
     </div>
   );
 };

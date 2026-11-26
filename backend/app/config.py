@@ -24,7 +24,7 @@ class AppSettings(BaseModel):
     discovery_port: int = DEFAULT_DISCOVERY_PORT
     transfer_port: int = DEFAULT_TRANSFER_PORT
     auto_accept_trusted: bool = True
-    auto_accept_all: bool = True
+    auto_accept_all: bool = False
     max_concurrent_transfers: int = 3
     chunk_size: int = DEFAULT_CHUNK_SIZE
     rate_limit_mbps: int = 0  # 0 = unlimited

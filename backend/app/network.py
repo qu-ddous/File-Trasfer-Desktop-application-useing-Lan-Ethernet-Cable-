@@ -59,43 +59,53 @@ def get_network_interfaces() -> List[Dict[str, Any]]:
 
 def get_best_lan_ip() -> Optional[Dict[str, Any]]:
     """
-    Picks the best active LAN/Ethernet interface for transfers.
-    Prioritizes active physical Ethernet, then Wi-Fi, avoiding loopback and virtual adapters.
+    Picks the physical Ethernet adapter for direct cable transfers.
+    Prioritizes dedicated Ethernet cable link exclusively over Wi-Fi.
     """
     ifaces = get_network_interfaces()
+    
+    # 1. Look for physical Ethernet adapters first
+    ethernets = [
+        i for i in ifaces 
+        if i["is_ethernet"] and not ("virtual" in i["interface_name"].lower() or "vethernet" in i["interface_name"].lower())
+    ]
+    
+    # Check if any physical Ethernet has an assigned IPv4 address (connected)
+    connected_ethernets = [e for e in ethernets if e["is_up"] and not e["ip_address"].startswith("127.")]
+    if connected_ethernets:
+        return connected_ethernets[0]
+        
+    # If physical Ethernet exists but cable is unplugged, report cable status
+    if ethernets:
+        eth = ethernets[0]
+        return {
+            "interface_name": eth["interface_name"],
+            "ip_address": "Cable Unplugged",
+            "broadcast": "255.255.255.255",
+            "mac_address": eth["mac_address"],
+            "is_up": False,
+            "speed_mbps": 0,
+            "is_ethernet": True,
+            "is_wifi": False,
+            "is_loopback": False
+        }
+            
+    # 2. If no Ethernet adapter hardware exists on PC, check other physical candidates
     candidates = [
         i for i in ifaces 
         if i["is_up"] and not i["is_loopback"] and not i["ip_address"].startswith("127.")
     ]
-    
-    # 1. Prefer physical Ethernet with real IP
-    ethernets = [
-        i for i in candidates 
-        if i["is_ethernet"] and not ("virtual" in i["interface_name"].lower() or "vethernet" in i["interface_name"].lower())
-    ]
-    if ethernets:
-        # Prefer configured LAN/Ethernet subnet, otherwise first active ethernet
-        return ethernets[0]
-            
-    # 2. Prefer any physical non-virtual interface (e.g. Wi-Fi)
-    physical = [
-        i for i in candidates 
-        if not ("virtual" in i["interface_name"].lower() or "vethernet" in i["interface_name"].lower())
-    ]
-    if physical:
-        return physical[0]
-
     if candidates:
         return candidates[0]
 
     return {
-        "interface_name": "No LAN Connection",
+        "interface_name": "Ethernet (No Link)",
         "ip_address": "127.0.0.1",
-        "broadcast": "127.255.255.255",
+        "broadcast": "255.255.255.255",
         "mac_address": "",
         "is_up": False,
         "speed_mbps": 0,
-        "is_ethernet": False,
+        "is_ethernet": True,
         "is_wifi": False,
         "is_loopback": True
     }

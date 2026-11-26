@@ -141,16 +141,6 @@ export const SendFiles: React.FC<SendFilesProps> = ({ onNavigate }) => {
         </div>
       </div>
 
-      {/* Graphical Data Flow Pipeline */}
-      <NetworkDataFlow
-        mode="send"
-        localIp={networkStatus?.local_ip}
-        peerDeviceName={selectedPeer?.device_name}
-        peerIp={selectedPeer?.last_known_ip}
-        isStreaming={isSending}
-        stagedFilesCount={selectedPaths.length}
-      />
-
       {errorMsg && (
         <div className="p-4 rounded-2xl bg-[#E05252]/10 border border-[#E05252]/25 flex items-center gap-3 text-xs font-bold text-[#E05252] shadow-md shadow-[#E05252]/5">
           <AlertCircle className="w-5 h-5 shrink-0" />
@@ -295,6 +285,16 @@ export const SendFiles: React.FC<SendFilesProps> = ({ onNavigate }) => {
           </div>
         </div>
       </div>
+
+      {/* Pro Visual Hardware Data Flow Pipeline (Positioned at bottom) */}
+      <NetworkDataFlow
+        mode="send"
+        localIp={networkStatus?.local_ip}
+        peerDeviceName={selectedPeer?.device_name}
+        peerIp={selectedPeer?.last_known_ip}
+        isStreaming={isSending}
+        stagedFilesCount={selectedPaths.length}
+      />
     </div>
   );
 };

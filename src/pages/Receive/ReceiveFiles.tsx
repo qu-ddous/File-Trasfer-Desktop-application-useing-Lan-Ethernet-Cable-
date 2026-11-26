@@ -94,17 +94,6 @@ export const ReceiveFiles: React.FC = () => {
         </div>
       </div>
 
-      {/* Graphical Data Flow Pipeline */}
-      <NetworkDataFlow
-        mode="receive"
-        localIp={networkStatus?.local_ip}
-        peerDeviceName={incomingRequest?.sender_name || receivingTransfer?.peer_name}
-        peerIp={incomingRequest?.peer_ip}
-        isStreaming={Boolean(receivingTransfer)}
-        transferredBytes={receivingTransfer?.transferred_bytes || 0}
-        totalBytes={incomingRequest?.total_bytes || receivingTransfer?.total_bytes || 0}
-      />
-
       {incomingRequest ? (
         <div className="bg-white rounded-3xl border-2 border-[#7C3AED] p-8 shadow-xl shadow-[#7C3AED]/15 animate-fade-in space-y-6">
           <div className="flex items-center gap-4 text-[#7C3AED]">
@@ -202,6 +191,17 @@ export const ReceiveFiles: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Pro Visual Hardware Data Flow Pipeline (Positioned at bottom) */}
+      <NetworkDataFlow
+        mode="receive"
+        localIp={networkStatus?.local_ip}
+        peerDeviceName={incomingRequest?.sender_name || receivingTransfer?.peer_name}
+        peerIp={incomingRequest?.peer_ip}
+        isStreaming={Boolean(receivingTransfer)}
+        transferredBytes={receivingTransfer?.transferred_bytes || 0}
+        totalBytes={incomingRequest?.total_bytes || receivingTransfer?.total_bytes || 0}
+      />
     </div>
   );
 };
