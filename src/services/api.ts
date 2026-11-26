@@ -57,6 +57,11 @@ export const api = {
       method: 'DELETE'
     }, { status: 'error' });
   },
+  clearAllDevices: async () => {
+    return safeFetch(`${API_BASE}/devices`, {
+      method: 'DELETE'
+    }, { status: 'error' });
+  },
   pairDevice: async (deviceId: string, action: 'pair' | 'unpair' | 'trust') => {
     return safeFetch(`${API_BASE}/devices/pair`, {
       method: 'POST',

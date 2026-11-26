@@ -39,6 +39,16 @@ def init_db():
     );
     """)
 
+    # Blocked/ignored devices (so permanently removed devices never auto-reappear from UDP beacons)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS blocked_devices (
+        device_id TEXT PRIMARY KEY,
+        device_name TEXT,
+        ip_address TEXT,
+        blocked_at TEXT NOT NULL
+    );
+    """)
+
     # Transfers table (Overall sessions)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS transfers (
@@ -150,9 +160,45 @@ def get_devices(online_device_ids: List[str] = None) -> List[Dict[str, Any]]:
     return devices
 
 def delete_device(device_id: str):
+    """Permanently deletes a device and blocks it so incoming UDP beacons never re-add it."""
     conn = get_connection()
     cursor = conn.cursor()
+    # Fetch existing name & IP before deletion
+    cursor.execute("SELECT device_name, last_known_ip FROM devices WHERE device_id = ?", (device_id,))
+    row = cursor.fetchone()
+    dev_name = row["device_name"] if row else ""
+    ip = row["last_known_ip"] if row else ""
+    now = datetime.now(timezone.utc).isoformat()
+
     cursor.execute("DELETE FROM devices WHERE device_id = ?", (device_id,))
+    cursor.execute("""
+    INSERT OR REPLACE INTO blocked_devices (device_id, device_name, ip_address, blocked_at)
+    VALUES (?, ?, ?, ?)
+    """, (device_id, dev_name, ip, now))
+    conn.commit()
+    conn.close()
+
+def unblock_device(device_id: str):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM blocked_devices WHERE device_id = ?", (device_id,))
+    conn.commit()
+    conn.close()
+
+def get_blocked_device_ids() -> List[str]:
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT device_id FROM blocked_devices")
+    rows = cursor.fetchall()
+    conn.close()
+    return [r["device_id"] for r in rows]
+
+def clear_all_devices():
+    """Purges all saved and blocked devices completely."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM devices")
+    cursor.execute("DELETE FROM blocked_devices")
     conn.commit()
     conn.close()
 

@@ -76,11 +76,23 @@ export const Devices: React.FC = () => {
     try {
       await api.deleteDevice(deviceId);
       await refreshDevices();
-      showToast('success', 'Device Removed', `${devName} has been removed from saved computers.`);
-      setFeedback(`✓ ${devName} removed from your list.`);
+      showToast('success', 'Device Permanently Removed', `${devName} is deleted and permanently blocked from reappearing.`);
+      setFeedback(`✓ ${devName} permanently removed and blocked.`);
     } catch (e: any) {
       showToast('error', 'Error Removing Device', e.message || 'Could not delete device.');
       console.error('Delete device error:', e);
+    }
+  };
+
+  const handleClearAllDevices = async () => {
+    if (devices.length === 0) return;
+    try {
+      await api.clearAllDevices();
+      await refreshDevices();
+      showToast('info', 'All Devices Purged', 'All discovered and saved devices have been permanently cleared.');
+      setFeedback('✓ All devices purged from database and memory.');
+    } catch (e: any) {
+      showToast('error', 'Failed to Clear', e.message);
     }
   };
 
@@ -160,7 +172,19 @@ export const Devices: React.FC = () => {
             <Monitor className="w-5 h-5 text-indigo-600" />
             Connected & Saved Computers ({devices.length})
           </h3>
-          <span className="text-xs text-slate-500 font-medium">Auto-refreshes every 3 seconds</span>
+          <div className="flex items-center gap-3">
+            {devices.length > 0 && (
+              <button
+                onClick={handleClearAllDevices}
+                className="px-3 py-1.5 rounded-xl border border-rose-200 text-rose-700 hover:bg-rose-50 text-[11px] font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                title="Permanently remove all discovered and saved computers"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Clear All Devices
+              </button>
+            )}
+            <span className="text-xs text-slate-500 font-medium">Auto-refreshes</span>
+          </div>
         </div>
 
         {devices.length === 0 ? (

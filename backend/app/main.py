@@ -297,6 +297,16 @@ async def connect_manual_device(req: ConnectManualRequest):
     res = await discovery_engine.add_manual_peer(req.ip, req.port or DEFAULT_DISCOVERY_PORT)
     return {"status": "success", "result": res}
 
+@app.delete("/api/devices")
+async def clear_all_saved_devices():
+    from app.database import clear_all_devices
+    if discovery_engine:
+        discovery_engine.known_peers.clear()
+        discovery_engine.blocked_device_ids.clear()
+    clear_all_devices()
+    await broadcast_ws_event({"event": "devices_cleared", "data": {}})
+    return {"status": "success", "message": "All devices purged."}
+
 @app.delete("/api/devices/{device_id}")
 async def remove_device(device_id: str):
     if discovery_engine:

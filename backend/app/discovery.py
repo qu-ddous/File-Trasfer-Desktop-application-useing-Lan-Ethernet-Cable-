@@ -28,6 +28,7 @@ class DiscoveryEngine:
         
         self.running = False
         self.known_peers: Dict[str, Dict[str, Any]] = {}  # device_id -> details
+        self.blocked_device_ids: set = set()
         self._listener_task: Optional[asyncio.Task] = None
         self._beacon_task: Optional[asyncio.Task] = None
         self._cleanup_task: Optional[asyncio.Task] = None
@@ -37,6 +38,11 @@ class DiscoveryEngine:
         if self.running:
             return
         self.running = True
+        try:
+            from app.database import get_blocked_device_ids
+            self.blocked_device_ids = set(get_blocked_device_ids())
+        except Exception:
+            pass
         logger.info(f"Starting UDP Discovery on port {self.discovery_port}...")
         
         loop = asyncio.get_running_loop()
@@ -93,8 +99,8 @@ class DiscoveryEngine:
             if msg.get("magic") not in ("WIREDROP", "LANSHARE") or msg.get("version") != "1.0":
                 return
             peer_id = msg.get("device_id")
-            if not peer_id or peer_id == self.device_id:
-                # Ignore self beacon
+            if not peer_id or peer_id == self.device_id or peer_id in self.blocked_device_ids:
+                # Ignore self beacon or permanently blocked/removed device
                 return
 
             ip = addr[0]
@@ -210,10 +216,14 @@ class DiscoveryEngine:
         return list(self.known_peers.values())
 
     def remove_peer(self, device_id: str):
+        self.blocked_device_ids.add(device_id)
         self.known_peers.pop(device_id, None)
         for pid, pdata in list(self.known_peers.items()):
             if pid == device_id or pdata.get("device_id") == device_id:
                 self.known_peers.pop(pid, None)
+
+    def unblock_peer(self, device_id: str):
+        self.blocked_device_ids.discard(device_id)
 
     async def broadcast_beacon_once(self):
         """Immediately transmits a beacon packet announcing updated name/config."""

@@ -46,6 +46,18 @@ def test_database_and_settings():
     assert peer["is_online"] is True
     assert peer["last_known_ip"] == "192.168.1.50"
 
+    # Test permanent delete & block
+    from app.database import delete_device, get_blocked_device_ids, unblock_device
+    delete_device("peer-abc")
+    blocked = get_blocked_device_ids()
+    assert "peer-abc" in blocked
+    devs_after = get_devices()
+    assert not any(d["device_id"] == "peer-abc" for d in devs_after)
+
+    # Test unblock
+    unblock_device("peer-abc")
+    assert "peer-abc" not in get_blocked_device_ids()
+
 def test_network_detection():
     ifaces = get_network_interfaces()
     assert isinstance(ifaces, list)
