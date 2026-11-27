@@ -30,12 +30,15 @@ class TransferSession:
         self.peer_name = peer_name
         self.total_bytes = total_bytes
         self.transferred_bytes = 0
+        self.current_speed: float = 0.0
+        self.current_item: str = ""
         self.status = "pending"
         self.start_time = time.time()
         self.cancelled = False
         self.error: Optional[str] = None
         self.items: List[Dict[str, Any]] = []
         self.save_path: str = ""
+        self.temp_files_to_clean: List[str] = []
 
 class TransferEngine:
     def __init__(
@@ -257,6 +260,8 @@ class TransferEngine:
                             speed = bytes_since_last / (now - last_speed_time)
                             last_speed_time = now
                             bytes_since_last = 0
+                            session.current_speed = speed
+                            session.current_item = rel_path
                             await self._emit_event("transfer_progress", {
                                 "transfer_id": transfer_id,
                                 "transferred_bytes": session.transferred_bytes,
@@ -330,65 +335,104 @@ class TransferEngine:
         peer_port: int,
         peer_id: str,
         peer_name: str,
-        file_paths: List[str]
+        file_paths: List[str],
+        compress: bool = False
     ) -> str:
         """
-        Gathers files/folders, computes checksums, initiates connection,
-        and streams file chunks to peer.
+        Gathers files/folders, optionally compresses into a bulk ZIP archive,
+        computes checksums, initiates connection, and streams file chunks to peer.
         """
         transfer_id = str(uuid.uuid4())
 
         # Build list of transfer items preserving hierarchy
         items: List[Dict[str, Any]] = []
         total_bytes = 0
+        temp_files: List[str] = []
 
-        for path in file_paths:
-            path_obj = os.path.abspath(path)
-            if os.path.isdir(path_obj):
-                base_dir_name = os.path.basename(path_obj)
-                items.append({
-                    "source_path": path_obj,
-                    "relative_path": base_dir_name,
-                    "is_directory": True,
-                    "size": 0,
-                    "checksum": ""
-                })
-                for root, dirs, files in os.walk(path_obj):
-                    rel_to_base = os.path.relpath(root, path_obj)
-                    for d in dirs:
-                        rel = os.path.normpath(os.path.join(base_dir_name, rel_to_base, d)).replace("\\", "/")
-                        items.append({
-                            "source_path": os.path.join(root, d),
-                            "relative_path": rel,
-                            "is_directory": True,
-                            "size": 0,
-                            "checksum": ""
-                        })
-                    for f in files:
-                        full_f = os.path.join(root, f)
-                        rel = os.path.normpath(os.path.join(base_dir_name, rel_to_base, f)).replace("\\", "/")
-                        f_size = os.path.getsize(full_f)
-                        total_bytes += f_size
-                        f_sha = calculate_sha256(full_f)
-                        items.append({
-                            "source_path": full_f,
-                            "relative_path": rel,
-                            "is_directory": False,
-                            "size": f_size,
-                            "checksum": f_sha
-                        })
-            elif os.path.isfile(path_obj):
-                fname = os.path.basename(path_obj)
-                f_size = os.path.getsize(path_obj)
-                total_bytes += f_size
-                f_sha = calculate_sha256(path_obj)
-                items.append({
-                    "source_path": path_obj,
-                    "relative_path": fname,
-                    "is_directory": False,
-                    "size": f_size,
-                    "checksum": f_sha
-                })
+        if compress and file_paths:
+            import tempfile
+            import zipfile
+            zip_name = f"WireDrop_Bundle_{int(time.time())}.zip"
+            zip_path = os.path.join(tempfile.gettempdir(), zip_name)
+
+            def _create_bundle():
+                with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED, compresslevel=1) as zf:
+                    for p in file_paths:
+                        p_abs = os.path.abspath(p)
+                        if os.path.isdir(p_abs):
+                            base_name = os.path.basename(p_abs)
+                            for root, dirs, files in os.walk(p_abs):
+                                rel_root = os.path.relpath(root, p_abs)
+                                for f in files:
+                                    full_f = os.path.join(root, f)
+                                    arc_name = os.path.normpath(os.path.join(base_name, rel_root, f))
+                                    zf.write(full_f, arc_name)
+                                if not files and not dirs:
+                                    arc_dir = os.path.normpath(os.path.join(base_name, rel_root)) + "/"
+                                    zf.writestr(arc_dir, "")
+                        elif os.path.isfile(p_abs):
+                            zf.write(p_abs, os.path.basename(p_abs))
+
+            await asyncio.to_thread(_create_bundle)
+            f_size = os.path.getsize(zip_path)
+            f_sha = await asyncio.to_thread(calculate_sha256, zip_path)
+            total_bytes = f_size
+            items.append({
+                "source_path": zip_path,
+                "relative_path": zip_name,
+                "is_directory": False,
+                "size": f_size,
+                "checksum": f_sha
+            })
+            temp_files.append(zip_path)
+        else:
+            for path in file_paths:
+                path_obj = os.path.abspath(path)
+                if os.path.isdir(path_obj):
+                    base_dir_name = os.path.basename(path_obj)
+                    items.append({
+                        "source_path": path_obj,
+                        "relative_path": base_dir_name,
+                        "is_directory": True,
+                        "size": 0,
+                        "checksum": ""
+                    })
+                    for root, dirs, files in os.walk(path_obj):
+                        rel_to_base = os.path.relpath(root, path_obj)
+                        for d in dirs:
+                            rel = os.path.normpath(os.path.join(base_dir_name, rel_to_base, d)).replace("\\", "/")
+                            items.append({
+                                "source_path": os.path.join(root, d),
+                                "relative_path": rel,
+                                "is_directory": True,
+                                "size": 0,
+                                "checksum": ""
+                            })
+                        for f in files:
+                            full_f = os.path.join(root, f)
+                            rel = os.path.normpath(os.path.join(base_dir_name, rel_to_base, f)).replace("\\", "/")
+                            f_size = os.path.getsize(full_f)
+                            total_bytes += f_size
+                            f_sha = calculate_sha256(full_f)
+                            items.append({
+                                "source_path": full_f,
+                                "relative_path": rel,
+                                "is_directory": False,
+                                "size": f_size,
+                                "checksum": f_sha
+                            })
+                elif os.path.isfile(path_obj):
+                    fname = os.path.basename(path_obj)
+                    f_size = os.path.getsize(path_obj)
+                    total_bytes += f_size
+                    f_sha = calculate_sha256(path_obj)
+                    items.append({
+                        "source_path": path_obj,
+                        "relative_path": fname,
+                        "is_directory": False,
+                        "size": f_size,
+                        "checksum": f_sha
+                    })
 
         # Record in DB
         create_transfer_record(
@@ -405,6 +449,7 @@ class TransferEngine:
 
         session = TransferSession(transfer_id, "send", peer_id, peer_name, total_bytes)
         session.items = items
+        session.temp_files_to_clean = temp_files
         self.active_transfers[transfer_id] = session
 
         # Launch background sender task
@@ -514,6 +559,8 @@ class TransferEngine:
                             speed = bytes_since_last / (now - last_speed_time)
                             last_speed_time = now
                             bytes_since_last = 0
+                            session.current_speed = speed
+                            session.current_item = item["relative_path"]
                             await self._emit_event("transfer_progress", {
                                 "transfer_id": transfer_id,
                                 "transferred_bytes": session.transferred_bytes,
@@ -553,6 +600,12 @@ class TransferEngine:
         finally:
             if transfer_id in self.active_transfers:
                 del self.active_transfers[transfer_id]
+            for tmp_f in getattr(session, "temp_files_to_clean", []):
+                try:
+                    if os.path.exists(tmp_f):
+                        os.remove(tmp_f)
+                except Exception:
+                    pass
             if writer:
                 writer.close()
                 try:

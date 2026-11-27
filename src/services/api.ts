@@ -75,6 +75,7 @@ export const api = {
     peer_id: string;
     peer_name: string;
     file_paths: string[];
+    compress?: boolean;
   }) => {
     return safeFetch(`${API_BASE}/transfers/send`, {
       method: 'POST',

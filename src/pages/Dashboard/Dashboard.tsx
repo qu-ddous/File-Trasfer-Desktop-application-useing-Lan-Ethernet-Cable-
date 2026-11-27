@@ -16,6 +16,7 @@ import {
   Share2
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { formatSpeed } from '../../utils/formatters';
 
 interface DashboardProps {
   onNavigate: (tab: string) => void;
@@ -169,7 +170,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
               </div>
             </div>
             <div className="text-2xl font-black text-[#20263A]">
-              {networkStatus?.is_connected
+              {activeTransfer && (activeTransfer.current_speed || 0) > 0
+                ? formatSpeed(activeTransfer.current_speed || 0)
+                : networkStatus?.is_connected
                 ? `${networkStatus?.speed_mbps || 1000} Mbps`
                 : '0 Mbps'}
             </div>

@@ -25,6 +25,8 @@ export interface TransferSessionInfo {
   peer_name: string;
   total_bytes: number;
   transferred_bytes: number;
+  current_speed?: number;
+  current_item?: string;
   status: 'pending' | 'transferring' | 'completed' | 'failed' | 'cancelled' | 'rejected';
   items_count: number;
 }

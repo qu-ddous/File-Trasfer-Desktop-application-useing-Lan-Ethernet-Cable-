@@ -29,6 +29,7 @@ export const SendFiles: React.FC<SendFilesProps> = ({ onNavigate }) => {
   const { showToast } = useToast();
   const [selectedPaths, setSelectedPaths] = useState<string[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
+  const [compressBeforeSend, setCompressBeforeSend] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -96,7 +97,8 @@ export const SendFiles: React.FC<SendFilesProps> = ({ onNavigate }) => {
         peer_port: peer.transfer_port,
         peer_id: peer.device_id,
         peer_name: peer.device_name,
-        file_paths: selectedPaths
+        file_paths: selectedPaths,
+        compress: compressBeforeSend
       });
 
       if (res.status === 'started') {
@@ -269,10 +271,24 @@ export const SendFiles: React.FC<SendFilesProps> = ({ onNavigate }) => {
               </div>
             )}
 
+            {/* Compress & Send Toggle (Bonus Feature) */}
+            <label className="mt-5 flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-200 cursor-pointer hover:bg-slate-100/70 transition-all">
+              <div>
+                <p className="text-xs font-extrabold text-slate-800">Compress Payload (.zip)</p>
+                <p className="text-[11px] text-slate-500">Bundle &amp; zip folders before sending</p>
+              </div>
+              <input
+                type="checkbox"
+                checked={compressBeforeSend}
+                onChange={(e) => setCompressBeforeSend(e.target.checked)}
+                className="w-4 h-4 accent-teal-600 cursor-pointer"
+              />
+            </label>
+
             <button
               disabled={isSending || selectedPaths.length === 0 || !selectedDeviceId}
               onClick={handleStartSend}
-              className={`w-full mt-6 flex items-center justify-center gap-2.5 py-4 rounded-2xl text-white font-bold text-xs transition-all cursor-pointer shadow-md ${
+              className={`w-full mt-4 flex items-center justify-center gap-2.5 py-4 rounded-2xl text-white font-bold text-xs transition-all cursor-pointer shadow-md ${
                 isSending || selectedPaths.length === 0 || !selectedDeviceId
                   ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
                   : 'bg-teal-600 hover:bg-teal-700 shadow-teal-500/20 hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0'

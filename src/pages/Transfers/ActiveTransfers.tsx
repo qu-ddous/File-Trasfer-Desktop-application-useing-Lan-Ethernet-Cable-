@@ -74,16 +74,27 @@ export const ActiveTransfers: React.FC = () => {
                     </div>
                     <div>
                       <h4 className="font-extrabold text-base text-[#20263A]">{isSend ? 'Sending to' : 'Receiving from'} {t.peer_name}</h4>
-                      <p className="text-xs text-[#758096] mt-0.5">{t.items_count} item(s) &bull; <span className="font-mono font-bold text-[#20263A]">{formatBytes(t.transferred_bytes)}</span> of <span className="font-mono">{formatBytes(t.total_bytes)}</span></p>
+                      <p className="text-xs text-[#758096] mt-0.5">
+                        {t.items_count} item(s) &bull; <span className="font-mono font-bold text-[#20263A]">{formatBytes(t.transferred_bytes)}</span> of <span className="font-mono">{formatBytes(t.total_bytes)}</span>
+                        {t.current_item && (
+                          <span className="ml-2 text-slate-500 truncate">({t.current_item})</span>
+                        )}
+                      </p>
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => handleCancel(t.transfer_id)}
-                    className="flex items-center gap-1.5 text-xs text-[#E05252] hover:bg-[#E05252]/10 px-4 py-2.5 rounded-2xl font-bold transition-all cursor-pointer shadow-xs hover:shadow-sm"
-                  >
-                    <X className="w-4 h-4" /> Cancel Stream
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <div className="px-3.5 py-2 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700 font-mono font-black text-xs flex items-center gap-1.5 shadow-2xs">
+                      <Zap className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>{formatSpeed(t.current_speed || 0)}</span>
+                    </div>
+                    <button
+                      onClick={() => handleCancel(t.transfer_id)}
+                      className="flex items-center gap-1.5 text-xs text-[#E05252] hover:bg-[#E05252]/10 px-4 py-2.5 rounded-2xl font-bold transition-all cursor-pointer shadow-xs hover:shadow-sm"
+                    >
+                      <X className="w-4 h-4" /> Cancel Stream
+                    </button>
+                  </div>
                 </div>
 
                 {/* Shiny Progress Bar */}
