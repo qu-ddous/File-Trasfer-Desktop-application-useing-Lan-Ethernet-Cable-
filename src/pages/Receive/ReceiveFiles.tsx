@@ -96,7 +96,7 @@ export const ReceiveFiles: React.FC = () => {
       {incomingRequest ? (
         <div className="bg-white rounded-3xl border-2 border-[#7C3AED] p-8 shadow-xl shadow-[#7C3AED]/15 animate-fade-in space-y-6">
           <div className="flex items-center gap-4 text-[#7C3AED]">
-            <div className="w-12 h-12 rounded-2xl bg-[#7C3AED]/10 flex items-center justify-center shrink-0 shadow-sm">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-700 to-violet-900 text-white flex items-center justify-center shrink-0 icon-shine">
               <Download className="w-6 h-6 animate-bounce" />
             </div>
             <div>
@@ -164,8 +164,8 @@ export const ReceiveFiles: React.FC = () => {
         </div>
       ) : (
         <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center shadow-sm space-y-6">
-          <div className="w-16 h-16 rounded-3xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto shadow-xs border border-blue-100">
-            <Radio className="w-8 h-8 animate-pulse text-blue-600" />
+          <div className="w-16 h-16 rounded-3xl bg-gradient-to-br from-indigo-700 to-blue-900 text-white flex items-center justify-center mx-auto icon-shine">
+            <Radio className="w-8 h-8 animate-pulse text-white" />
           </div>
           <div className="space-y-2 max-w-md mx-auto">
             <h3 className="font-extrabold text-lg text-slate-900">WireDrop Direct Socket Listener Ready</h3>

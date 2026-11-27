@@ -98,9 +98,11 @@ export const ConsolePage: React.FC = () => {
       <div className="relative overflow-hidden rounded-3xl p-8 bg-white border border-slate-200 shadow-sm text-slate-800">
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-2 max-w-xl">
-            <h2 className="text-3xl font-black tracking-tight text-slate-900 flex items-center gap-3">
-              <Terminal className="w-8 h-8 text-blue-600" />
-              <span>Diagnostics & Live Console</span>
+            <h2 className="text-3xl font-black tracking-tight text-slate-900 flex items-center gap-3.5">
+              <span className="w-11 h-11 rounded-2xl bg-gradient-to-br from-slate-800 to-zinc-950 text-white flex items-center justify-center icon-shine">
+                <Terminal className="w-5 h-5" />
+              </span>
+              <span>Diagnostics &amp; Live Console</span>
             </h2>
             <p className="text-slate-600 text-sm font-medium leading-relaxed">
               Real-time kernel TCP/UDP socket telemetry, background server logs, peer connectivity handshake testing, and error inspection.

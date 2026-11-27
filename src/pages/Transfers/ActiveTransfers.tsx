@@ -52,8 +52,8 @@ export const ActiveTransfers: React.FC = () => {
 
       {activeTransfers.length === 0 ? (
         <div className="bg-white rounded-3xl border border-[#E6EAF2] p-16 text-center shadow-md hover:shadow-lg transition-all">
-          <div className="w-16 h-16 rounded-3xl bg-amber-50 text-[#EA580C] flex items-center justify-center mx-auto mb-4 shadow-sm">
-            <Activity className="w-8 h-8 opacity-70" />
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-700 to-orange-900 text-white flex items-center justify-center mx-auto mb-4 icon-shine">
+            <Activity className="w-7 h-7" />
           </div>
           <h3 className="font-extrabold text-lg text-[#20263A]">No streams currently active</h3>
           <p className="text-xs text-[#758096] max-w-md mx-auto mt-2 leading-relaxed">
@@ -69,8 +69,8 @@ export const ActiveTransfers: React.FC = () => {
               <div key={t.transfer_id} className="bg-white rounded-3xl border border-[#E6EAF2] p-6 shadow-md hover:shadow-lg transition-all space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm ${isSend ? 'bg-blue-100 text-[#3157D5]' : 'bg-emerald-100 text-[#22A06B]'}`}>
-                      {isSend ? <ArrowUpRight className="w-6 h-6" /> : <ArrowDownLeft className="w-6 h-6" />}
+                    <div className={`w-11 h-11 rounded-2xl flex items-center justify-center text-white icon-shine ${isSend ? 'bg-gradient-to-br from-indigo-700 to-blue-900' : 'bg-gradient-to-br from-emerald-700 to-teal-900'}`}>
+                      {isSend ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownLeft className="w-5 h-5" />}
                     </div>
                     <div>
                       <h4 className="font-extrabold text-base text-[#20263A]">{isSend ? 'Sending to' : 'Receiving from'} {t.peer_name}</h4>

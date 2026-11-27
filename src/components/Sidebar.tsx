@@ -43,15 +43,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setTab, isOnline, 
     }
   };
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'send', label: 'Send Files', icon: Send },
-    { id: 'receive', label: 'Receive Files', icon: Download },
-    { id: 'devices', label: 'LAN Devices', icon: Monitor },
-    { id: 'share', label: 'Share App (EXE)', icon: Share2 },
-    { id: 'transfers', label: 'Active Streams', icon: Activity, badge: activeCount > 0 ? activeCount : null },
-    { id: 'history', label: 'Transfer History', icon: History },
-    { id: 'console', label: 'Console & Logs', icon: Terminal },
-    { id: 'settings', label: 'Settings', icon: Settings },
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, color: 'from-indigo-700 to-blue-900' },
+    { id: 'send', label: 'Send Files', icon: Send, color: 'from-teal-700 to-emerald-900' },
+    { id: 'receive', label: 'Receive Files', icon: Download, color: 'from-purple-700 to-violet-900' },
+    { id: 'devices', label: 'LAN Devices', icon: Monitor, color: 'from-cyan-700 to-sky-900' },
+    { id: 'share', label: 'Share App (EXE)', icon: Share2, color: 'from-rose-700 to-pink-900' },
+    { id: 'transfers', label: 'Active Streams', icon: Activity, badge: activeCount > 0 ? activeCount : null, color: 'from-amber-700 to-orange-900' },
+    { id: 'history', label: 'Transfer History', icon: History, color: 'from-red-700 to-rose-900' },
+    { id: 'console', label: 'Console & Logs', icon: Terminal, color: 'from-slate-800 to-zinc-950' },
+    { id: 'settings', label: 'Settings', icon: Settings, color: 'from-fuchsia-700 to-purple-950' },
   ];
 
   return (
@@ -59,7 +59,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setTab, isOnline, 
       <div>
         {/* Brand Header */}
         <div className="h-20 flex items-center px-6 gap-3.5 border-b border-slate-200">
-          <div className="w-10 h-10 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-500/25">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-700 to-indigo-950 flex items-center justify-center text-white icon-shine">
             <Zap className="w-5 h-5 fill-white" />
           </div>
           <div>
@@ -78,7 +78,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setTab, isOnline, 
         </div>
 
         {/* Navigation Items */}
-        <nav className="p-4 space-y-1.5">
+        <nav className="p-3.5 space-y-1.5">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentTab === item.id;
@@ -86,19 +86,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setTab, isOnline, 
               <button
                 key={item.id}
                 onClick={() => setTab(item.id)}
-                className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25 transform translate-x-1'
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                    ? 'bg-slate-900 text-white shadow-md shadow-slate-900/20 transform translate-x-1'
+                    : 'text-slate-700 hover:bg-slate-100 hover:text-slate-950'
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-500'}`} />
+                  <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center text-white icon-shine shrink-0`}>
+                    <Icon className="w-[18px] h-[18px]" />
+                  </div>
                   <span>{item.label}</span>
                 </div>
                 {item.badge !== null && item.badge !== undefined && (
                   <span className={`px-2 py-0.5 text-[10px] rounded-full font-black ${
-                    isActive ? 'bg-white text-blue-600' : 'bg-blue-600 text-white animate-pulse'
+                    isActive ? 'bg-white text-slate-900' : 'bg-amber-600 text-white animate-pulse'
                   }`}>
                     {item.badge}
                   </span>

@@ -161,30 +161,32 @@ export const SendFiles: React.FC<SendFilesProps> = ({ onNavigate }) => {
         <div className="lg:col-span-2 space-y-4">
           <div className="bg-white rounded-3xl border border-[#E6EAF2] p-6 shadow-md hover:shadow-lg transition-all">
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Layers className="w-5 h-5 text-[#0D9488]" />
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-700 to-emerald-900 flex items-center justify-center text-white icon-shine">
+                  <Layers className="w-5 h-5" />
+                </div>
                 <h3 className="font-bold text-sm text-[#20263A]">Staged Payload List</h3>
               </div>
 
               <div className="flex items-center gap-2.5">
                 <button
                   onClick={handlePickFiles}
-                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-[#0D9488]/10 text-[#0D9488] hover:bg-[#0D9488]/20 text-xs font-bold transition-all cursor-pointer shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-teal-700 to-emerald-800 text-white hover:from-teal-800 hover:to-emerald-900 text-xs font-bold transition-all cursor-pointer icon-shine transform hover:-translate-y-0.5"
                 >
                   <FilePlus className="w-4 h-4" /> Add Files
                 </button>
                 <button
                   onClick={handlePickFolder}
-                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-[#3157D5]/10 text-[#3157D5] hover:bg-[#3157D5]/20 text-xs font-bold transition-all cursor-pointer shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-indigo-700 to-blue-900 text-white hover:from-indigo-800 hover:to-blue-950 text-xs font-bold transition-all cursor-pointer icon-shine transform hover:-translate-y-0.5"
                 >
                   <FolderPlus className="w-4 h-4" /> Add Folder
                 </button>
                 {selectedPaths.length > 0 && (
                   <button
                     onClick={handleClearAll}
-                    className="p-2.5 rounded-2xl text-slate-400 hover:text-[#E05252] hover:bg-[#E05252]/10 transition-all cursor-pointer"
+                    className="p-2.5 rounded-2xl bg-rose-50 text-rose-700 hover:bg-rose-100 transition-all cursor-pointer"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-5 h-5" />
                   </button>
                 )}
               </div>
@@ -192,7 +194,7 @@ export const SendFiles: React.FC<SendFilesProps> = ({ onNavigate }) => {
 
             {selectedPaths.length === 0 ? (
               <div className="py-16 border-2 border-dashed border-[#E6EAF2] rounded-2xl text-center bg-gradient-to-b from-[#F5F7FC] to-white shadow-inner">
-                <div className="w-14 h-14 rounded-2xl bg-teal-50 text-[#0D9488] flex items-center justify-center mx-auto mb-3 shadow-sm">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal-700 to-emerald-900 text-white flex items-center justify-center mx-auto mb-3 icon-shine">
                   <FolderPlus className="w-7 h-7" />
                 </div>
                 <p className="text-sm font-bold text-[#20263A]">No items staged for transmission</p>

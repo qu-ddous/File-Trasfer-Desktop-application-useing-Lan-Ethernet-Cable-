@@ -46,23 +46,23 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={() => onNavigate('send')}
-              className="flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md shadow-blue-500/20 transition-all cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
+              className="flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-teal-700 to-emerald-800 hover:from-teal-800 hover:to-emerald-900 text-white font-bold text-sm icon-shine transition-all cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
             >
-              <Send className="w-4 h-4 text-white" />
+              <Send className="w-5 h-5 text-white" />
               <span>Send Files</span>
             </button>
             <button
               onClick={() => onNavigate('receive')}
-              className="flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md shadow-emerald-500/20 transition-all cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
+              className="flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-purple-700 to-violet-900 hover:from-purple-800 hover:to-violet-950 text-white font-bold text-sm icon-shine transition-all cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
             >
-              <Download className="w-4 h-4 text-white" />
+              <Download className="w-5 h-5 text-white" />
               <span>Receive Files</span>
             </button>
             <button
               onClick={() => onNavigate('share')}
-              className="flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm shadow-md shadow-slate-900/10 transition-all cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
+              className="flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-rose-700 to-pink-900 hover:from-rose-800 hover:to-pink-950 text-white font-bold text-sm icon-shine transition-all cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
             >
-              <Share2 className="w-4 h-4 text-white" />
+              <Share2 className="w-5 h-5 text-white" />
               <span>Share App (EXE)</span>
             </button>
           </div>
@@ -77,8 +77,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           <div className="relative z-10">
             <div className="flex items-center justify-between text-[#758096] mb-3">
               <span className="text-[11px] font-bold uppercase tracking-wider">Peer Connection</span>
-              <div className="w-8 h-8 rounded-xl bg-blue-100/70 flex items-center justify-center text-[#3157D5]">
-                <Network className="w-4 h-4" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-700 to-blue-900 flex items-center justify-center text-white icon-shine">
+                <Network className="w-5 h-5" />
               </div>
             </div>
             <div className="flex items-baseline gap-2">
@@ -119,8 +119,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           <div className="relative z-10">
             <div className="flex items-center justify-between text-[#758096] mb-3">
               <span className="text-[11px] font-bold uppercase tracking-wider">LAN Peers</span>
-              <div className="w-8 h-8 rounded-xl bg-purple-100/70 flex items-center justify-center text-[#6B7FEA]">
-                <Monitor className="w-4 h-4" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-700 to-violet-900 flex items-center justify-center text-white icon-shine">
+                <Monitor className="w-5 h-5" />
               </div>
             </div>
             <div className="text-2xl font-black text-[#20263A]">
@@ -142,8 +142,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           <div className="relative z-10">
             <div className="flex items-center justify-between text-[#758096] mb-3">
               <span className="text-[11px] font-bold uppercase tracking-wider">Live Streams</span>
-              <div className="w-8 h-8 rounded-xl bg-emerald-100/70 flex items-center justify-center text-[#22A06B]">
-                <Activity className="w-4 h-4" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-700 to-teal-900 flex items-center justify-center text-white icon-shine">
+                <Activity className="w-5 h-5" />
               </div>
             </div>
             <div className="text-2xl font-black text-[#20263A]">
@@ -165,8 +165,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           <div className="relative z-10">
             <div className="flex items-center justify-between text-[#758096] mb-3">
               <span className="text-[11px] font-bold uppercase tracking-wider">Link Speed</span>
-              <div className="w-8 h-8 rounded-xl bg-amber-100/70 flex items-center justify-center text-[#E6A23C]">
-                <Zap className="w-4 h-4" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-700 to-orange-900 flex items-center justify-center text-white icon-shine">
+                <Zap className="w-5 h-5" />
               </div>
             </div>
             <div className="text-2xl font-black text-[#20263A]">

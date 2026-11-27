@@ -107,7 +107,7 @@ export const ShareApp: React.FC = () => {
       {shareInfo.firewall_open ? (
         <div className="rounded-3xl border border-emerald-200 bg-emerald-50/80 p-5 shadow-sm flex items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-500/15 border border-emerald-300 text-emerald-700 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-700 to-teal-900 text-white flex items-center justify-center shrink-0 icon-shine">
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
@@ -121,8 +121,8 @@ export const ShareApp: React.FC = () => {
         <div className="rounded-3xl border border-amber-200 bg-gradient-to-r from-amber-50/90 to-orange-50/90 p-6 shadow-sm">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
             <div className="flex items-start gap-3.5">
-              <div className="w-11 h-11 rounded-2xl bg-amber-500/15 border border-amber-300 text-amber-700 flex items-center justify-center shrink-0">
-                <ShieldAlert className="w-6 h-6" />
+              <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-700 to-orange-900 text-white flex items-center justify-center shrink-0 icon-shine">
+                <ShieldAlert className="w-5 h-5" />
               </div>
               <div className="space-y-1">
                 <h4 className="font-extrabold text-sm text-amber-950 flex items-center gap-2">
@@ -160,8 +160,8 @@ export const ShareApp: React.FC = () => {
       <div className="bg-white rounded-3xl border border-[#E6EAF2] p-8 shadow-md hover:shadow-lg transition-all space-y-6">
         <div className="flex items-center justify-between border-b border-[#E6EAF2] pb-6">
           <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-sky-100 flex items-center justify-center text-[#0284C7] shadow-sm">
-              <Share2 className="w-6 h-6" />
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-rose-700 to-pink-900 flex items-center justify-center text-white icon-shine">
+              <Share2 className="w-5 h-5" />
             </div>
             <div>
               <h3 className="font-extrabold text-lg text-[#20263A]">Direct Browser Download Link</h3>
@@ -254,7 +254,9 @@ export const ShareApp: React.FC = () => {
       {/* Package Status Banner */}
       <div className="bg-white rounded-3xl border border-[#E6EAF2] p-6 shadow-sm flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <FileBox className="w-5 h-5 text-[#0284C7]" />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-700 to-blue-900 text-white flex items-center justify-center icon-shine">
+            <FileBox className="w-5 h-5" />
+          </div>
           <div>
             <h4 className="font-bold text-xs text-[#20263A]">Host Package Ready for Streaming</h4>
             <p className="text-[11px] text-[#758096]">Bundled self-contained Windows x64 distribution available on port 52522</p>

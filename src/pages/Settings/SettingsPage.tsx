@@ -67,10 +67,10 @@ export const SettingsPage: React.FC = () => {
       <div className="bg-white rounded-3xl p-7 border border-slate-200 shadow-sm flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-            <span className="p-2.5 rounded-2xl bg-blue-600 text-white shadow-md shadow-blue-500/20">
+            <span className="w-11 h-11 rounded-2xl bg-gradient-to-br from-fuchsia-700 to-purple-900 text-white flex items-center justify-center icon-shine">
               <SettingsIcon className="w-5 h-5" />
             </span>
-            Preferences & Configuration
+            Preferences &amp; Configuration
           </h2>
           <p className="text-xs text-slate-600 font-medium mt-1">Configure your network identity, high-speed sockets, and secure storage destination</p>
         </div>
@@ -85,8 +85,11 @@ export const SettingsPage: React.FC = () => {
       <form onSubmit={handleSave} className="space-y-6">
         {/* Card 1: Identity & Profile */}
         <div className="bg-white rounded-3xl p-6 border border-[#E6EAF2] shadow-sm hover:shadow-md transition-all">
-          <div className="flex items-center gap-2.5 text-xs font-bold uppercase tracking-wider text-[#3157D5] mb-4">
-            <Cpu className="w-4 h-4" /> Device Profile & Identification
+          <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-wider text-indigo-900 mb-4">
+            <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-700 to-blue-900 text-white flex items-center justify-center icon-shine">
+              <Cpu className="w-5 h-5" />
+            </span>
+            Device Profile &amp; Identification
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -117,8 +120,11 @@ export const SettingsPage: React.FC = () => {
 
         {/* Card 2: Storage Destination */}
         <div className="bg-white rounded-3xl p-6 border border-[#E6EAF2] shadow-sm hover:shadow-md transition-all">
-          <div className="flex items-center gap-2.5 text-xs font-bold uppercase tracking-wider text-[#22A06B] mb-4">
-            <HardDrive className="w-4 h-4" /> Storage & Downloads
+          <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-wider text-emerald-900 mb-4">
+            <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-700 to-teal-900 text-white flex items-center justify-center icon-shine">
+              <HardDrive className="w-5 h-5" />
+            </span>
+            Storage &amp; Downloads
           </div>
 
           <div>
@@ -144,8 +150,11 @@ export const SettingsPage: React.FC = () => {
 
         {/* Card 3: Network & Ports */}
         <div className="bg-white rounded-3xl p-6 border border-[#E6EAF2] shadow-sm hover:shadow-md transition-all">
-          <div className="flex items-center gap-2.5 text-xs font-bold uppercase tracking-wider text-[#6B7FEA] mb-4">
-            <Radio className="w-4 h-4" /> Socket Ports & Concurrency
+          <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-wider text-amber-900 mb-4">
+            <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-700 to-orange-900 text-white flex items-center justify-center icon-shine">
+              <Radio className="w-5 h-5" />
+            </span>
+            Socket Ports &amp; Concurrency
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">

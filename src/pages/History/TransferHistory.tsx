@@ -110,8 +110,8 @@ export const TransferHistory: React.FC = () => {
               return (
                 <div key={item.transfer_id} className="py-4 flex items-center justify-between hover:bg-[#F5F7FC]/70 px-4 rounded-2xl transition-all shadow-2xs">
                   <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm ${isSuccess ? 'bg-emerald-100 text-[#22A06B]' : 'bg-rose-100 text-[#E05252]'}`}>
-                      {isSuccess ? <CheckCircle2 className="w-6 h-6" /> : <XCircle className="w-6 h-6" />}
+                    <div className={`w-11 h-11 rounded-2xl flex items-center justify-center text-white icon-shine ${isSuccess ? 'bg-gradient-to-br from-emerald-700 to-teal-900' : 'bg-gradient-to-br from-rose-700 to-red-900'}`}>
+                      {isSuccess ? <CheckCircle2 className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
                     </div>
                     <div>
                       <p className="text-xs font-extrabold text-[#20263A]">

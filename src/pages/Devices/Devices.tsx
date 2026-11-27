@@ -146,7 +146,7 @@ export const Devices: React.FC = () => {
 
       {/* Manual IP Connect Bar */}
       <form onSubmit={handleManualConnect} className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm flex gap-4 items-center">
-        <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 shadow-xs">
+        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-700 to-blue-900 text-white flex items-center justify-center shrink-0 icon-shine">
           <Link className="w-5 h-5" />
         </div>
         <input
@@ -198,8 +198,8 @@ export const Devices: React.FC = () => {
             {devices.map((dev) => (
               <div key={dev.device_id} className="py-4 flex items-center justify-between hover:bg-slate-50/80 px-4 rounded-2xl transition-all">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-xs">
-                    <Monitor className="w-6 h-6" />
+                  <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-cyan-700 to-sky-900 flex items-center justify-center text-white icon-shine">
+                    <Monitor className="w-5 h-5" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
